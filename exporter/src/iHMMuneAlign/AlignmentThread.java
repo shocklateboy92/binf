@@ -1,6 +1,7 @@
 package iHMMuneAlign;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.ArrayList;
 //import javax.swing.JTextArea;
@@ -594,6 +595,11 @@ class AlignmentThread extends Thread
 							StatePath v = null;
 							try {
 								v = dp.viterbi(res_array, ScoreType.PROBABILITY);
+
+                                DPWriter writer = new DPWriter(dp, res_array[0].toList());
+                                writer.write(new FileOutputStream("model.dat"));
+//                                System.out.println(res_array[0].toList());
+
 								//forwardScore = dp.forward(res_array, ScoreType.PROBABILITY);
 							} catch(IllegalAlphabetException illalphe) {
 							
@@ -637,9 +643,11 @@ class AlignmentThread extends Thread
 						        return null;
 								
 								
-							}
-							
-							//get state path
+							} catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+
+                            //get state path
 							SymbolList viterbi_state_seq = v.symbolListForLabel(StatePath.STATES);
 							//get path score
 							double pathScore = v.getScore();
