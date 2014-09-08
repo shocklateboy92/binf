@@ -85,7 +85,7 @@
 \begin{columns}
   \begin{column}{.5\textwidth} 
   %%TODO: find HMM pic
-    \includegraphics[width=\textwidth]{}
+%     \includegraphics[width=\textwidth]{}
   \end{column}
   \begin{column}{.5\textwidth} 
     \begin{itemize}
@@ -101,6 +101,7 @@
 
 \begin{frame}
 \frametitle{IHMMuneAlign}
+\includegraphics[width=\textwidth]{model.pdf}
 \begin{itemize}
  \item Is given the rearranged gene sequence that's found in the B-Cell (For a particular Immunoglobulin).
  \item Attempts to determine the sequences that formed it
@@ -109,25 +110,62 @@
 \end{itemize}
 \end{frame}
 
-%%TODO: Mention increasing data sets (100,000 genes)
+\begin{frame}
+\frametitle{Motivation}
+ \begin{itemize}
+  \item Current gene-sequencing technologies are good at processing lots of small sequences
+  \item Not so good with long sequences
+  \item Rearranged gene in a B-Cell is easy to find
+  \begin{itemize}
+   \item Start is marked by constant region
+   \item End is marked by a few possible genes
+  \end{itemize}
+  \item Sequencing technologies are improving - getting up to 100,000 rearranged antibody genes from a single patient
+  \item Means IHMMuneAlign \emph{needs to be faster}
+ \end{itemize}
+\end{frame}
 
 \section{Plan}
+
 \begin{frame}
 \frametitle{Existing Implementation}
 \begin{itemize}
  \item Written in Java
  \item Uses BioJava
- \item Was designed for single run
  \item Does iteration in launcher script
  \begin{itemize}
   \item Overhead of spinning up/tearing down JVM after each one
   \item Reading data files each time
   \item Invaliding caches/buffers etc
  \end{itemize}
-
 \end{itemize}
-
-
 \end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Initial Run}
+\begin{verbatim}
+>AJ512650.1| Homo sapiens partial mRNA for immunoglobulin
+heavy chain variable region (IGHV gene), clone 43
+CTCGAGTCGGGGGGAGGCTGGGTACAGCCTGGCAGGTCCCTGAGACTCTCCTGTTCA
+GCCTCTGGACTCACCTTTGATGATTATGCCATGCACTGGGTCCGGCAAGCTCCAGGG
+AAGGGCCTGGAGTGGGTCTCCGGTATTAGTTGGAACAGTGGTGTTAGAGCCTATGCG
+GACTCTGTGAAGGGCCGATTCACCATCTCCAGAGACAACGGCAAGAATTCCCTGTAT
+CTGCAAATGAACAGTCTGAGACCTGAGGACACGGCCTTGTATTATTGTGCAAAAGAT
+ATTCGGGCTGCTACCCCATACGCCCTTGATCACTGGGGCCAGGGAGTCCTGGTCACC
+GTCTCCTCA
+...
+\end{verbatim}
+\begin{verbatim}
+7.42s user 0.24s system 198% cpu 3.865 total
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+\frametitle{Existing Implementation}
+\includegraphics[width=\textwidth]{profile.png}
+\end{frame}
+
+%% time for mine:
+%% 0.74s user 0.01s system 99% cpu 0.751 total
 
 \end{document}
