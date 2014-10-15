@@ -1,10 +1,16 @@
-\documentclass[a4paper,12pt,titlepage]{article}
+\documentclass[a4paper,12pt]{report}
 
-\usepackage{ucs}
-\usepackage[utf8]{inputenc}
-\usepackage[australian]{babel}
-\usepackage{fontenc}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{anysize}
+\marginsize{2cm}{2cm}{2cm}{2cm}
+
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{subfloat}
+\usepackage[utf8]{inputenc}
 
 \usepackage[dvips,pdftex]{hyperref}
 
@@ -16,12 +22,13 @@
 \maketitle
 
 
-\section{Introduction}
-\section{Background}
-\subsection{Immune Response}
-\subsection{Hidden Markov Models}
+\chapter{Introduction}
+\section{Immune Response}
+\section{Hidden Markov Models}
 \section{Motivation}
-\subsection{Existing Solution}
+\subsection{iHMMuneAlign}
+Developed in 2007 by a team of researchers at UNSW, iHMMuneAlign attempts to simulate this process.
+It represents the combination process of immunoglobulin heavy chain genes as a hidden markov model.
 \subsection{Existing Solution Limitations}
 \section{Aims}
 \section{Propsed Solution}
