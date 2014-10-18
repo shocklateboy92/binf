@@ -8,11 +8,21 @@
 
 \usepackage{graphicx}
 \usepackage{caption}
-\usepackage{subcaption}
-\usepackage{subfloat}
 \usepackage[utf8]{inputenc}
 
-\usepackage[dvips,pdftex]{hyperref}
+\usepackage{csquotes}
+\usepackage[australian]{babel}
+
+\usepackage[backend=biber]{biblatex}
+\addbibresource{thesis.bib}
+
+\usepackage{hyperref}
+
+\usepackage{pgfplots}
+\pgfplotsset{width=\textwidth,compat=1.9}
+
+\usepgfplotslibrary{external}
+\tikzexternalize
 
 \author{Lasath Fernando}
 \title{Thesis A}
@@ -30,7 +40,67 @@
 Developed in 2007 by a team of researchers at UNSW, iHMMuneAlign attempts to simulate this process.
 It represents the combination process of immunoglobulin heavy chain genes as a hidden markov model.
 \subsection{Existing Solution Limitations}
+
 \section{Aims}
-\section{Propsed Solution}
-Many things worth trying. In order, most promising to least
+
+\chapter{Analysis}
+Since the high level aim of this project is to improve the performance of iHMMuneAlign, it was necessary to analyze the existing implementation in order to gain insight into its structure, as well as to create realistic aims. 
+
+\section{Run Time}
+One of the primary limitations of the current implementation is its execution time. 
+
+\begin{tikzpicture}
+ \begin{axis}[
+    axis lines = left,
+    xlabel = $x$,
+    ylabel = {$f(x)$},
+  ]
+  
+  \addplot [
+    color = red
+  ]{x};
+  \addlegendentry{Sequences per run = 1}
+  
+ \end{axis}
+\end{tikzpicture}
+
+
+\section{Profiling}
+In order to determine the most appropriate approaches for improving performance and overcoming the limitations of the original implementation, further analysis is required. Specifically, we are interested in which parts of the program consume the most CPU time and memory, as well as how they increase with the workload.
+
+The method for collecting this data is called profiling. Since the orginal implementation of iHMMuneAlign was written in Java, we can use various interfaces in the Java Virtual Machine (JVM) to gather this data. The JVM has an interface called Java Native Interface (JNI)\autocite{jni}, that allows external programs and native libraries (usually written in C/C++) to interact with Java objects. Alongside that, from Java verison 1.5 onwards, the JVM also provides another interface, called Java Virtual Machine Tool Interface (JVMTI)\autocite{jvmti}, which allows external tools to be notified as certain events (such as object allocation, method call) occur during execution.
+
+\subsection{Call Graph}
+
+\chapter{Proposed Solution}
+
+\section{Re-implementing From Scratch}
+Based on the above analysis, it is clear that a major structural overhaul will be required in order to meaningfully proceed any further. The primary reasons for it is that the existing code is not structured in an easily maintainable way, and the primary authors are not longer available to assist us. 
+
+Re-implementing from scratch will allowed us to choose a different langauge than the current one and as a result it will be implementated in C++. C++ is still the industry standard for constructing large, high performance software\autocite{cpp}, as it contains concepts from high level lanugages, while still allowing for low level optimizations, including memroy management. 
+
+The initial version of the new implementation will be loosely based off the already existing implementation. Once the code is rewritten and structured in a manner that lends itself to easy modification, the real optimization (such as threading, and caching computation) can begin.
+
+\section{Dependencies of iHMMuneAlign}
+Apart from the codebase, the current implementation has several dependencies that perform significant amounts of computation. This section will outline how the new implemntation will replicate their features.
+
+\subsection{BioJava}
+BioJava \autocite{biojava}is a general purpose Bioinformatics library, that contains several useful features for iHMMuneAlign. However, since iHMMuneAlign was written, BioJava has undergone a complete restructuring, and most -if not all- the modules the original implementation uses have been deprecated. 
+
+\subsubsection{Fasta Reader}
+FASTA was originally the format used by a program that bore its name to store databases of DNA sequences\autocite{fasta}. These days, it is commonly used in Bioinformatics to represent large quantities of gene sequences within a file. BioJava could parse files FASTA format and convert them to its in-memory representation, which were then used by iHMMuneAlign. 
+Since we no longer intend to use BioJava, an alternate method was required to parse the inputs and repitoire files for each genes was required. Since the FASTA format is a very simple format, a custom parser could be built quite easily. In addition, the NCBI C++ Toolkit \autocite{ncbi-fasta} can also be used to trivially parse FASTA files.
+
+\subsubsection{Bioinformatic Data Structures}
+BioJava contains a large collection of pre-built data structures to represent commonly occuring biological objects and concepts (E.g. RichSequenece, FiniteAlphabet). Here we have several viable solutions.
+
+\paragraph{Bio++}
+is a set of general purpose Bioinformatics libraries written in C++ \autocite{bpp}. Much like BioJava, it also provieds various pre built data structures that represent various biological entities, like gene sequences. However, how well they correspond to the used data structures from BioJava and how useful they are when re-implementing is yet to be seen.
+
+\subsubsubsection{}
+
+\autocite{iHMMuneAlign}
+
+\printbibliography
+
 \end{document}
