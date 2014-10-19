@@ -135,3 +135,15 @@ journal = {Bioinformatics}
   pages={202--210},
   year={2005}
 }
+
+@INPROCEEDINGS{jit, 
+author={Krall, A.}, 
+booktitle={Parallel Architectures and Compilation Techniques, 1998. Proceedings. 1998 International Conference on}, 
+title={Efficient JavaVM just-in-time compilation}, 
+year={1998}, 
+month={Oct}, 
+pages={205-212}, 
+abstract={Conventional compilers are designed for producing highly optimized code without paying much attention to compile time. The design goals of Java just-in-time compilers are different: produce fast code at the smallest possible compile time. In this article we present a very fast algorithm for translating JavaVM byte code to high quality machine code for RISC processors. This algorithm handles combines instructions, does copy elimination and coalescing and does register allocation. It comprises three passes: basic block determination, stack analysis and register preallocation, final register allocation and machine code generation. This algorithm replaces an older one in the CACAO JavaVM implementation reducing the compile time by a factor of seven and producing slightly faster machine code. The speedup comes mainly from following simplifications: fixed assignment of registers at basic block boundaries, simple register allocator better exception handling better memory management and fine tuning the implementation. The CACAO system is currently faster than every JavaVM implementation for the Alpha processor and generates machine code for all used methods of the javac compiler and its libraries in 60 milliseconds on an Alpha workstation}, 
+keywords={parallel programming;program compilers;CACAO system;JavaVM;JavaVM implementation;RISC processors;block determination;compilers;just-in-time compilation;native code compilation;register allocation;register preallocation;stack analysis;Computer languages;Internet;Java;Memory management;Page description languages;Read only memory;Reduced instruction set computing;Registers;Sun;Virtual machining}, 
+doi={10.1109/PACT.1998.727250}, 
+ISSN={1089-795X},}
