@@ -85,11 +85,10 @@ The initial version of the new implementation will be loosely based off the alre
 Apart from the codebase, the current implementation has several dependencies that perform significant amounts of computation. This section will outline how the new implemntation will replicate their features.
 
 \subsection{BioJava}
-BioJava \autocite{biojava}is a general purpose Bioinformatics library, that contains several useful features for iHMMuneAlign. However, since iHMMuneAlign was written, BioJava has undergone a complete restructuring, and most -if not all- the modules the original implementation uses have been deprecated. 
+BioJava \autocite{biojava}is a general purpose Bioinformatics library, that contains several useful features for iHMMuneAlign. However, since iHMMuneAlign was written, BioJava has undergone a complete restructuring, and most -if not all- the modules the original implementation uses have been deprecated.
 
 \subsubsection{Fasta Reader}
-FASTA was originally the format used by a program that bore its name to store databases of DNA sequences\autocite{fasta}. These days, it is commonly used in Bioinformatics to represent large quantities of gene sequences within a file. BioJava could parse files FASTA format and convert them to its in-memory representation, which were then used by iHMMuneAlign. 
-Since we no longer intend to use BioJava, an alternate method was required to parse the inputs and repitoire files for each genes was required. Since the FASTA format is a very simple format, a custom parser could be built quite easily. In addition, the NCBI C++ Toolkit \autocite{ncbi-fasta} can also be used to trivially parse FASTA files.
+FASTA was originally the format used by a program that bore its name to store databases of DNA sequences \autocite{fasta}. These days, it is commonly used in Bioinformatics to represent large quantities of gene sequences within a file. BioJava could parse files FASTA format and convert them to its in-memory representation, which were then used by iHMMuneAlign. Since we no longer intend to use BioJava, an alternate method was required to parse the inputs and repitoire files for each genes was required. Since the FASTA format is a very simple format, a custom parser could be built quite easily. In addition, the NCBI C++ Toolkit \autocite{ncbi-fasta} can also be used to trivially parse FASTA files.
 
 \subsubsection{Bioinformatic Data Structures}
 BioJava contains a large collection of pre-built data structures to represent commonly occuring biological objects and concepts (E.g. RichSequenece, FiniteAlphabet). Here we have several viable solutions.
@@ -97,9 +96,21 @@ BioJava contains a large collection of pre-built data structures to represent co
 \paragraph{Bio++}
 is a set of general purpose Bioinformatics libraries written in C++ \autocite{bpp}. Much like BioJava, it also provieds various pre built data structures that represent various biological entities, like gene sequences. However, how well they correspond to the used data structures from BioJava and how useful they are when re-implementing is yet to be seen.
 
-\subsubsubsection{}
+%% sensible (text),from this point on
+\paragraph{Qt}
+is a C++ framework, originally created by Trolltech and now maintained by Digia. It has various components that assist in the rapid building of user interfaces, as well complex systems and algorithms. While they are less specific to biology, they are designed for speed and efficiency. Once the initial version is built using Bio++, if Bio++'s data structures are deemed a significant performance bottleneck, new ones will be custom built using Qt's support structure.
 
-\autocite{iHMMuneAlign}
+\paragraph{STL}
+The Standard Template Library (STL) that accompanies C++ also contains a series of very high performance, generic data structures and algorithms \autocite{stl}. However, it is widely considered to be less user friendly than its alternatives, like Qt. For this reason, Qt's data structures were selected as the primary candidate for a custom implementation, and if they cause a significant performance limitation, they will be replaced by their STL counterparts.
+
+\paragraph{Boost}
+is another, highly comprehensive set of libraries that extend the functionality of the STL. Select features from Boost often end up in subsequent revisions of the STL. Should functionality of the STL be insufficent to replace the Qt implementation once it's been deemed a performance bottleneck, Boost will be used to compensate.
+
+\subsection{DP Module}
+$<$Note: determine if this deserves its own section$>$
+
+\section{Concurrency}
+On modern computers, getting the most performance requires a program to be concurrent \autocite{freelunch}. Even the original implementation did use multiple threads of execution, using Java's built-in threading library.
 
 \printbibliography
 
