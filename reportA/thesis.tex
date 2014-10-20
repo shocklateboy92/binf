@@ -19,14 +19,16 @@
 \usepackage{hyperref}
 
 \usepackage{pgfplots}
-\pgfplotsset{width=\textwidth,compat=1.9}
+\pgfplotsset{width=12cm,compat=1.9}
 
 \usepgfplotslibrary{external}
 \tikzexternalize
 
-\author{Lasath Fernando}
-\title{Thesis A}
-\date{15/10/14}
+\author{Lasath Fernando\\\\
+Supervisor: Bruno Ga\"{e}ta\\
+Assessor: Andrew Collins}
+\title{Bioinformatics of the Immune System}
+\date{21/10/14}
 
 \begin{document}
 \maketitle
@@ -34,6 +36,8 @@
 
 \chapter{Introduction}
 \section{Combination Process}
+\emph{\textless Is this really necessary? Especially considering Raymond went through this in quite a bit of detail in his report. Is there a way I can refer to that, or insert it as a quotation? \textgreater}
+
 \section{Hidden Markov Models}
 \section{iHMMuneAlign}
 Developed in 2007 by a team of researchers at UNSW, iHMMuneAlign attempts to simulate this process \autocite{iHMMuneAlign}.
@@ -50,15 +54,21 @@ The current implementation consists of a Java executable and a shell script, to 
 
 Since we are interested in the rate the total runtime changes with workload as well with increasing paralellism, both were measured. It was run with a total workload ranging from 1 sequences to 100 sequences, with batch size ranging from 1 to 8. The results are shown in \autoref{fig:runtime}.
 
-%TODO: describe machine specs
+Note that this was performed on a machine with an AMD Phenom II 1090T (6-core) processor, 8GB of RAM and a solid state hard drive.
 
 \subsection{Interpretation of Results}
 With a batch size of 1, the expected linear increase was present. However, increasing the batch size shows a more sporadic decrease in runtime. This is to be expected, since concurrent programs tend to be very non-deterministic in execution time. However, there is an overall decrease in total execution time, as the batch size increases.
 
-%% TODO: replace jit reference with paper from IBM
-While this is in part due to the parallel nature of the existing implementation, it is also due to the overhead from invoking the Java program reducing. In each invocation, the Java Virtual Machine (JVM) has to be created, the program loaded (and JIT compiled \autocite{jit}), and the program itself needs to read the repitoire files etc. Since all this only has to be done once per batch, reducing the number of batches also reduced the total work needed to be done significantly. This can be seen in \autoref{fig:usertime}, which shows that the CPU time (total time that all the CPUs spent working, rather than waiting for each other, and waiting for disk/system operations) also reduces with batch size.
+This suggests that the existing implementation is concurrent, and will utilize all the available processing power on the CPU. However, that should have diminishing returns once the amount of threads exceeds the total number of CPU cores on the machine, which is not the case here - execution time continues to decrease at roughly the same pace as $n$ increases.
 
-\begin{figure}[h]
+Looking at the total CPU time spent on the process, rather than total execution time provided a theory (which was later confirmed in Section \ref{sec:threadprof}, on page \pageref{sec:threadprof}) to explain this behavior.
+For each invocation of the Java program, there is a significant amount of overhead. For example, the Java Virtual Machine (JVM) needs to be initialized, it needs to load the program, analyze and perform any JIT compilation (Just-in-Time compilation, to improve execution time \autocite{jit}). The program also needs to read in the repitoire data files for each gene and process them. On top of all that, any data that is being cached by the operating system on behalf of the program will be invalidated. Since this only needs to be done once per batch, as the batch sizes increases (and the number of batches decrease), this overhead also decreases.
+
+This is clearly apparent in \autoref{fig:usertime}, which shows that the total work done by the program to process all the sequences is reduced significantly as the $n$ increases.
+
+Comparing the total executable time (wall clock time) and the total CPU time of each run shows, that there was roughly double the CPU time as execution time. This indicates that the program has 2 threads of execution, but that it doesn't increase threads with workload. 
+
+\begin{figure}
   \centering
   \begin{tikzpicture}
     \begin{axis}[
@@ -74,13 +84,14 @@ While this is in part due to the parallel nature of the existing implementation,
   \label{fig:runtime}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
   \centering
   \begin{tikzpicture}
     \begin{axis}[
       axis lines = left,
       xlabel = Total sequences,
       ylabel = Time (Seconds),
+      cycle list name=color list
     ]
 
       \input{data2}
@@ -98,10 +109,30 @@ The method for collecting this data is called profiling. Since the orginal imple
 
 In \autoref{fig:callgraph}, the data for a run of iHMMuneAlign with 6 sequences, instrumented by jProfiler (a profiler implemented with the above method) is shown.
 
+\subsection{CPU Call Graph}
 \begin{figure}
  \caption{The call graph generated by jProfiler, for a single run of iHMMuneAlign}
  \label{fig:callgraph}
 \end{figure}
+TODO: Fill this section with an explanation of the callgraph
+
+\subsection{Threads}
+\label{sec:threadprof}
+An important aspect of the existing implementation is its threading model - i.e. how it distributes the workload between multiple threads of execution (which can then run on multiple CPUs or CPU cores). Since we already determined in Section \ref{sec:threadbench} it does indeed use multiple threads, we need to look closer at exactly how it does so. 
+
+For this, we have our profiler record events in the \texttt{java.util.concurrent} package, which include thread creation, destruction and blocking (waiting for another thread to complete). The results of this, shown in \autoref{fig:threadgraph} confirms our earlier hypothesis. The program has two threads active most of the time: one processing the gene, and one (main thread) waiting for it to complete, before starting the next one.
+
+The most likely reason behind the threads executing in sequence one after another, rather than in paralell is most likely due to concurrency bugs. It is a commonly accepted fact in industry that concurrent programming is extremely difficult and the original authors probably decided the performance benefit from paralellism wasn't worth the added complexity at the time.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{threads-graph.png}
+  \caption{Time spent by each thread;
+  running (\protect\includegraphics{jprofiler_images/ff00c400_bff000000.png}) and
+  waiting (\protect\includegraphics{jprofiler_images/ffffc400_bff000000.png})}
+  \label{fig:threadgraph}
+\end{figure}
+
 
 
 \chapter{Proposed Solution}
@@ -114,7 +145,7 @@ Re-implementing from scratch will allowed us to choose a different langauge than
 The initial version of the new implementation will be loosely based off the already existing implementation. Once the code is rewritten and structured in a manner that lends itself to easy modification, the real optimization (such as threading, and caching computation) can begin.
 
 \section{Dependencies of iHMMuneAlign}
-Apart from the codebase, the current implementation has several dependencies that perform significant amounts of computation. This section will outline how the new implemntation will replicate their features.
+Apart from the codebase, the current implementation has several dependencies that perform significant amounts of computation. This section outlines how the new implemntation will replicate their features.
 
 \subsection{BioJava}
 BioJava \autocite{biojava}is a general purpose Bioinformatics library, that contains several useful features for iHMMuneAlign. However, since iHMMuneAlign was written, BioJava has undergone a complete restructuring, and most -if not all- the modules the original implementation uses have been deprecated.
@@ -136,7 +167,7 @@ is a C++ framework, originally created by Trolltech and now maintained by Digia.
 The Standard Template Library (STL) that accompanies C++ also contains a series of very high performance, generic data structures and algorithms \autocite{stl}. However, it is widely considered to be less user friendly than its alternatives, like Qt. For this reason, Qt's data structures were selected as the primary candidate for a custom implementation, and if they cause a significant performance limitation, they will be replaced by their STL counterparts.
 
 \paragraph{Boost}
-is another, highly comprehensive set of libraries that extend the functionality of the STL. Select features from Boost often end up in subsequent revisions of the STL. Should functionality of the STL be insufficent to replace the Qt implementation once it's been deemed a performance bottleneck, Boost will be used to compensate.
+is another, highly comprehensive set of libraries that extend the functionality of the STL \autocite{boost}. Select features from Boost often end up in subsequent revisions of the STL. Should functionality of the STL be insufficent to replace the Qt implementation once it's been deemed a performance bottleneck, Boost will be used to compensate.
 
 \subsection{DP Module}
 $<$Note: determine if this deserves its own section$>$
