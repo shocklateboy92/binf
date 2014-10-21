@@ -38,18 +38,18 @@ Assessor: Andrew Collins}
 
 \chapter{Introduction}
 
-\section{Combination Process}
+\section{Immunoglobulin recombination}
 
 % TODO: source these figures
 \begin{figure}
   \includegraphics[width=\textwidth]{rearrangement.pdf}
-  \caption{The IGHV, IGHD and IGHJ gene combination process}
+  \caption{The IGHV, IGHD and IGHJ gene recombination process}
   \label{fig:combination}
 \end{figure}
 \begin{figure}
   \centering
   \includegraphics[width=12cm]{hmm-graph.pdf}
-  \caption{An example Hidden Markov Model}
+  \caption{An example Hidden Markov Model \autocite{wiki-hmm}}
   \label{fig:hmm}
 \end{figure}
 
@@ -59,13 +59,13 @@ It does so by creating immunoglobulins (also called antibodies) whose job is to 
 
 However, to deal with the highly diverse and evolving nature of foreign antigens, antibodies must mutate very rapidly. This allows them to be as diverse as the antigens they face, and adapt to bind to newly encountered pathogens.
 
-The process (essentialy randomly) selects 3 germline genes from a repertoire in the person's DNA  potentially consisting of between 38 and 45 IGHV genes \autocite{lefranc05, li02}, 23 IGHD genes \autocite{lee06} and 6 IGHJ \autocite{ravetch81} genes. These selected genes are then mutated (adding, removing or changing nucleotides) to generate further diversity. The antibodies that successfully bind to the antigen emit a chemical signal, which then encourages the production of similar antibodies. This entire process is illustrated in \autoref{fig:combination} and explained in more detail by Ga\"{e}ta \textit{et al.}\autocite{iHMMuneAlign}.
+The process (essentially randomly) selects 3 germline genes from a repertoire in the person's DNA  potentially consisting of between 38 and 45 IGHV genes \autocite{lefranc05, li02}, 23 IGHD genes \autocite{lee06} and 6 IGHJ \autocite{ravetch81} genes. These selected genes are then mutated (adding, removing or changing nucleotides) to generate further diversity. The antibodies that successfully bind to the antigen emit a chemical signal, which then encourages the production of similar antibodies. This entire process is illustrated in \autoref{fig:combination} and explained in more detail by Ga\"{e}ta \textit{et al.}\autocite{iHMMuneAlign}.
 
 \section{iHMMuneAlign}
 
-As a result of this gene combination and mutation process, the germline genes often don't provide much information on rearranged genes found in the B-Cells that create the antibodies themselves.
+As a result of this gene recombination and mutation process, the germline genes often don't provide much information on rearranged genes found in the B-Cells that create the antibodies themselves.
 
-Developed in 2007 by a team of researchers at UNSW, iHMMuneAlign attempts to simulate the process of immunoglobulin gene rearrangement.\autocite{iHMMuneAlign}.It represents the combination process of immunoglobulin heavy chain genes as a hidden Markov model, and then uses it to find the most probable set of germline genes that created the rearranged gene.
+Developed in 2007 by a team of researchers at UNSW, iHMMuneAlign attempts to simulate the process of immunoglobulin gene rearrangement.\autocite{iHMMuneAlign}.It represents the recombination process of immunoglobulin heavy chain genes as a hidden Markov model, and then uses it to find the most probable set of germline genes that created the rearranged gene.
 
 First, it selects the most likely IGHV germline gene from its repertoire of possible V genes, using the NCBI's Basic Local Alignment Search Tool (BLAST) \autocite{blast}. It then constructs a Hidden Markov Model with that IGHV gene, and all the possible IGHD and IGHJ genes, together with other states representing the somatic mutation.
 
@@ -80,7 +80,7 @@ $$I\left(\textnormal{Sunny}\right) \times E(\textnormal{Sunny},\textnormal{Walk}
 and the probability of it being Rainy is
 $$I(\textnormal{Rainy}) \times E(\textnormal{Rainy,Walk}) =
 0.6 \times 0.1 = 0.06$$
-where $I(X)$ is the inital probability of $X$ and $E(X,Y)$ is the emission probability of state $Y$ in state $X$.
+where $I(X)$ is the initial probability of $X$ and $E(X,Y)$ is the emission probability of state $Y$ in state $X$.
 
 If \texttt{Walk, Clean} were observed. The probability of it having been Rainy then Sunny is
 $$
@@ -97,7 +97,7 @@ $$
 $$
 where $T(X, Y)$ is the probability of transitioning from state $X$ to state $Y$.
 
-The Viterbi algorithm uses dynamic programming to recursively explore these probabilies, and selects the sequence of states with the highest probability at the end.
+The Viterbi algorithm uses dynamic programming to recursively explore these probabilities, and selects the sequence of states with the highest probability at the end.
 
 \chapter{Analysis}
 Since the high level aim of this project is to improve the performance of iHMMuneAlign, it was necessary to analyse the existing implementation in order to gain insight into its structure, as well as to create realistic aims.
@@ -116,7 +116,7 @@ Since the high level aim of this project is to improve the performance of iHMMun
       \input{data}
     \end{axis}
   \end{tikzpicture}
-  \caption{Total execution time (in seconds) to process the number of sequences. $n$ is the number of sequences per invocation of the program}
+  \caption{Total time taken (in seconds) to process the number of sequences (Wall-clock time). $n$ is the number of sequences per invocation of the program}
   \label{fig:runtime}
 \end{figure}
 \begin{figure}
@@ -132,7 +132,7 @@ Since the high level aim of this project is to improve the performance of iHMMun
       \input{data2}
     \end{axis}
   \end{tikzpicture}
-  \caption{Total CPU time (in seconds) to process the number of sequences. $n$ is the number of sequences per invocation of the program}
+  \caption{Total time spent doing work by each CPU on behalf of the process during execution (CPU Time). $n$ is the number of sequences per invocation of the program}
   \label{fig:usertime}
 \end{figure}
 
@@ -151,7 +151,7 @@ With a batch size of 1, the expected linear increase was present. However, incre
 
 This suggests that the existing implementation is concurrent, and will utilize all the available processing power on the CPU. However, that should have diminishing returns once the amount of threads exceeds the total number of CPU cores on the machine, which is not the case here - execution time continues to decrease at roughly the same pace as $n$ increases.
 
-Looking at the total CPU time spent on the process, rather than total execution time provided a theory (which was later confirmed in Section \ref{sec:threadprof}, on page \pageref{sec:threadprof}) to explain this behavior.
+Looking at the total CPU time spent on the process, rather than total execution time provided a theory (which was later confirmed in Section \ref{sec:threadprof}, on page \pageref{sec:threadprof}) to explain this behaviour.
 For each invocation of the Java program, there is a significant amount of overhead. For example, the Java Virtual Machine (JVM) needs to be initialized, it needs to load the program, analyse and perform any JIT compilation (Just-in-Time compilation, to improve execution time \autocite{jit}). The program also needs to read in the repertoire data files for each gene and process them. On top of all that, any data that are being cached by the operating system on behalf of the program will be invalidated. Since this only needs to be done once per batch, as the batch sizes increases (and the number of batches decrease), this overhead also decreases.
 
 This is clearly apparent in \autoref{fig:usertime}, which shows that the total work done by the program to process all the sequences is reduced significantly as the $n$ increases.
@@ -175,9 +175,9 @@ Comparing the total executable time (wall clock time) and the total CPU time of 
 \end{figure}
 In order to determine the most appropriate approaches for improving performance and overcoming the limitations of the original implementation, further analysis is required. Specifically, we are interested in which parts of the program consume the most CPU time and memory, as well as how they increase with the workload.
 
-The method for collecting this data is called profiling. Since the original implementation of iHMMuneAlign was written in Java, we can use various interfaces in the Java Virtual Machine (JVM) to gather this data. The JVM has an interface called Java Native Interface (JNI)\autocite{jni}, that allows external programs and native libraries (usually written in C/C++) to interact with Java objects. Alongside that, from Java version 1.5 onwards, the JVM also provides another interface, called Java Virtual Machine Tool Interface (JVMTI)\autocite{jvmti}, which allows external tools to be notified as certain events (such as object allocation, method call) occur during execution.
+The method for collecting this data is called profiling. Since the original implementation of iHMMuneAlign was written in Java, we can use various interfaces in the Java Virtual Machine (JVM) to gather this data. The JVM has an interface called Java Native Interface (JNI)\autocite{jni}, that allows external programs and native libraries (usually written in C/C++) to interact with Java objects. Alongside that, from Java version 1.5 onwards, the JVM also provides another interface, called Java Virtual Machine Tool Interface (JVMTI), which allows external tools to be notified as certain events (such as object allocation, method call) occur during execution.
 
-In \autoref{fig:callgraph}, the data for a run of iHMMuneAlign with 6 sequences, instrumented by jProfiler (a profiler implemented with the above method) is shown.
+In \autoref{fig:callgraph}, the data for a run of iHMMuneAlign with 6 sequences, instrumented by jProfiler \autocite{jprofiler} (a profiler implemented with the above method) is shown.
 
 \subsection{CPU Call Graph}
 \label{sec:cpuprof}
@@ -241,7 +241,7 @@ Apart from the codebase, the current implementation has several dependencies tha
 BioJava \autocite{biojava}is a general purpose Bioinformatics library, that contains several useful features for iHMMuneAlign. However, since iHMMuneAlign was written, BioJava has undergone a complete restructuring \autocite{biojava3}, and most -if not all- the modules the original implementation uses have been deprecated.
 
 \subsubsection{Fasta Reader}
-FASTA was originally the format used by a program that bore its name to store databases of DNA sequences \autocite{fasta}. These days, it is commonly used in Bioinformatics to represent large quantities of gene sequences within a file. BioJava could parse files FASTA format and convert them to its in-memory representation, which were then used by iHMMuneAlign. Since we no longer intend to use BioJava, an alternate method was required to parse the inputs and repertoire files for each genes was required. Since the FASTA format is a very simple format, a custom parser could be built quite easily. In addition, the NCBI C++ Toolkit \autocite{ncbi-fasta} can also be used to trivially parse FASTA files.
+FASTA was originally the format used by a program that bore its name to store databases of DNA sequences \autocite{fasta}. These days, it is commonly used in Bioinformatics to represent large quantities of gene sequences within a file. BioJava could parse files FASTA format and convert them to its in-memory representation, which were then used by iHMMuneAlign. Since we no longer intend to use BioJava, an alternate method was required to parse the inputs and repertoire files for each genes was required. Since the FASTA format is a very simple format, a custom parser could be built quite easily. In addition, the NCBI C++ Toolkit can also be used to trivially parse FASTA files.
 
 \subsubsection{Bioinformatic Data Structures}
 BioJava contains a large collection of pre-built data structures to represent commonly occurring biological objects and concepts (E.g. RichSequenece, FiniteAlphabet). Here we have several viable solutions.
@@ -286,7 +286,7 @@ The nature of our problem presents us two obvious ways of splitting it up to dis
 
  Creating a thread requires at least one system call (which is very expensive \autocite{syscalls}) and destroying requires another. Additionally, the operating system has to do more book-keeping, as well as preparing a bunch of extra resources for the thread, which then have to be cleaned up - causing a significant performance cost \autocite{threads}.
 
- A much more performance design would be to create a pool of worker threads at the start, and a queue of sequences for them to process. Each thread will then pop the sequence at the top of the queue, process it, write out the result, pop the sequence that is now at the head of the queue and repeat. In this case, the primary limitation for parallelism would come from the queue itself - by virtue of being a shared data structure, it would require synchronization to maintain consistency \autocite{concurrency}.
+ A much better performing design would be to create a pool of worker threads at the start, and a queue of sequences for them to process. Each thread will then pop the sequence at the top of the queue, process it, write out the result, pop the sequence that is now at the head of the queue and repeat. In this case, the primary limitation for parallelism would come from the queue itself - by virtue of being a shared data structure, it would require synchronization to maintain consistency \autocite{concurrency}.
 
  If the synchronization overhead of the queue is found to be a significant limitation on parallelism, it can be skipped altogether. Since all the inputs sequences are passed to the program in a file, the file itself can be partitioned - then each thread would read, parse and process all the sequences within a partition.
 
@@ -294,13 +294,51 @@ The nature of our problem presents us two obvious ways of splitting it up to dis
 
 \subsection{Per Processing Stage}
 
-The other way, is to consider each sequence as a series of tasks, and perform each one in a different thread. It's infeasible speed up the processing of an individual sequence using this method, as most (if not all) of these tasks would depend on the results of the previous, and initializing a thread could take longer than some of the tasks.
+The other way, is to consider each sequence as a series of tasks, and perform each one in a different thread. It's infeasible to speed up the processing of an individual sequence using this method, as most (if not all) of these tasks would depend on the results of the previous, and initializing a thread could take longer than some of the tasks.
 
-Considering that the goal of the project is to scale well with increasing numbers of sequences, this approach makes more sense; tasks can be done in batches. I.e. have $n$ threads process the first stage of $n\times k$ sequences (where $k$ is an integer constant), and then have all $n$ threads process the second stage and so on. This has the primary advantage of having much greater data locality (decreasing the working set, page faults, cache misses) and increasing performance significantly \autocite{locality}.
+Considering that the goal of the project is to scale well with increasing numbers of sequences, the following approach makes more sense; tasks can be done in batches. I.e. have $n$ threads process the first stage of $n\times k$ sequences (where $k$ is an integer constant), and then have all $n$ threads process the second stage and so on. This has the primary advantage of having much greater data locality (decreasing the working set, page faults, cache misses) and increasing performance significantly \autocite{locality}.
 
 Per contra, this approach will be heavily reliant on multiple work queues to distribute the tasks of different sequences between threads. As explained in the above section, the synchronization overhead of the queues may become a serious bottleneck on parallelism - even more so, due to the much heavier reliance on it.
 
 %TODO: mention stuff about pthreads, TBB, QtThread etc.
+
+\chapter{Timeline}
+
+The final report is due at in week 13 semester 1 next year - 2nd June, 2015. However, a demonstration needs to be done in week 10 - between 11-15 May, 2015.
+
+As such, it makes sense to target having the final implementation done by 11th of May, 2015. This will then leave a further 3 weeks to write up the final report detailing the project.
+
+Due to the open ended nature of this project, it is difficult to place absolute time targets. However, the clear priority will be to get the initial implementation in C++ done, using whichever libraries are necessary. This will then enable the exploration of further goals, such as threading, evaluation of Viterbi implementations, sharing computation between runs, etc.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+Start & End & Description\\
+\hline
+  present & Week 2 & Initial implementation of model generation in C++\\
+          &        & This will be done using the quickest libraries, and frameworks\\
+\hline
+  Week 2  & Week 4  & Evaluate implementation of Viterbi algorithm\\
+          &         & Compare against available libraries implementations\\
+\hline
+  Week 4  & Week 6  & Determine similarity of generated models \\
+          &         & Evaluate possibility of sharing computation between models\\
+\hline
+  Week 6  & Week 8  & Test and debug threading.\\
+          &         & Concurrency bugs deserve an extra time slot on their own.\\
+\hline
+  Week 8  & Week 10 & Perform further micro-optimizations\\
+          &         & Prepare for demonstration\\
+\hline
+  Week 10 & Week 12 & Write Thesis B Report\\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Contingency}
+The primary goal of this project is to improve the performance of iHMMuneAlign. The secondary goal is to improve the maintainability of its codebase.
+If the new implementation doesn't turn out to be significantly faster than the previous, it will still help iHMMuneAlign in the long run. If the initial implementation takes too long, and doesn't get completed within the time-frame of this project, it will be left in a state such that anyone who wishes to complete it at a future time can pick it up easily.
 
 \printbibliography
 
