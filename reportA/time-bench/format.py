@@ -15,7 +15,7 @@ for f in sys.argv[1:]:
             vals.append("({}, {})".format(run, time))
             run += 1
 
-    print(r"\addplot coordinates {{{}}};".format(" ".join(vals)))
+    print(r"\addplot +[mark=none] coordinates {{{}}};".format(" ".join(vals)))
     print(r"\addlegendentry{{n = {}}}".format(fnum))
 
 
