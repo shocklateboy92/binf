@@ -24,7 +24,6 @@
 \usepgfplotslibrary{external}
 \tikzexternalize
 
-\usepackage{verbatimbox}
 
 \author{Lasath Fernando\\\\
 Supervisor: Bruno Ga\"{e}ta\\
@@ -39,12 +38,66 @@ Assessor: Andrew Collins}
 
 \chapter{Introduction}
 
-\section{iHMMuneAlign}
-Developed in 2007 by a team of researchers at UNSW, iHMMuneAlign attempts to simulate this process \autocite{iHMMuneAlign}.
-It represents the combination process of immunoglobulin heavy chain genes as a hidden Markov model.
-
 \section{Combination Process}
+
+% TODO: source these figures
+\begin{figure}
+  \includegraphics[width=\textwidth]{rearrangement.pdf}
+  \caption{The IGHV, IGHD and IGHJ gene combination process}
+  \label{fig:combination}
+\end{figure}
+\begin{figure}
+  \centering
+  \includegraphics[width=12cm]{hmm-graph.pdf}
+  \caption{An example Hidden Markov Model}
+  \label{fig:hmm}
+\end{figure}
+
+The human immune system faces many challenges when dealing with foreign pathogens invading the body. One of them is identifying and classifying antigens that are not only vastly diverse, but also constantly mutating and evolving.
+
+It does so by creating immunoglobulins (also called antibodies) whose job is to identify and bind to certain antigens, effectively marking them for destruction by the rest of the immune system. The process, by necessity is highly selective - a given antibody will only bind to a very specific antigen.
+
+However, to deal with the highly diverse and evolving nature of foreign antigens, antibodies must mutate very rapidly. This allows them to be as diverse as the antigens they face, and adapt to bind to newly encountered pathogens.
+
+The process (essentialy randomly) selects 3 germline genes from a repertoire in the person's DNA  potentially consisting of between 38 and 45 IGHV genes \autocite{lefranc05, li02}, 23 IGHD genes \autocite{lee06} and 6 IGHJ \autocite{ravetch81} genes. These selected genes are then mutated (adding, removing or changing nucleotides) to generate further diversity. The antibodies that successfully bind to the antigen emit a chemical signal, which then encourages the production of similar antibodies. This entire process is illustrated in \autoref{fig:combination} and explained in more detail by Ga\"{e}ta \textit{et al.}\autocite{iHMMuneAlign}.
+
+\section{iHMMuneAlign}
+
+As a result of this gene combination and mutation process, the germline genes often don't provide much information on rearranged genes found in the B-Cells that create the antibodies themselves.
+
+Developed in 2007 by a team of researchers at UNSW, iHMMuneAlign attempts to simulate the process of immunoglobulin gene rearrangement.\autocite{iHMMuneAlign}.It represents the combination process of immunoglobulin heavy chain genes as a hidden Markov model, and then uses it to find the most probable set of germline genes that created the rearranged gene.
+
+First, it selects the most likely IGHV germline gene from its repertoire of possible V genes, using the NCBI's Basic Local Alignment Search Tool (BLAST) \autocite{blast}. It then constructs a Hidden Markov Model with that IGHV gene, and all the possible IGHD and IGHJ genes, together with other states representing the somatic mutation.
+
+It then uses the Viterbi algorithm to determine the most likely sequence of states (genes and their mutations) that caused the observed emissions (the rearranged sequence given as input).
+
 \section{Hidden Markov Models}
+
+A Hidden Markov Model is effectively a Markov Chain, where the states cannot be observed directly. They are used in a wide variety of machine learning applications, including speech recognition \autocite{hmm}.
+
+An example of a HMM is shown in \autoref{fig:hmm}. In this example, if the sequence of emissions \texttt{Walk} was observed, the probability of it being \texttt{Sunny} is
+$$I\left(\textnormal{Sunny}\right) \times E(\textnormal{Sunny},\textnormal{Walk}) = 0.4 \times 0.6 = 0.24$$
+and the probability of it being Rainy is
+$$I(\textnormal{Rainy}) \times E(\textnormal{Rainy,Walk}) =
+0.6 \times 0.1 = 0.06$$
+where $I(X)$ is the inital probability of $X$ and $E(X,Y)$ is the emission probability of state $Y$ in state $X$.
+
+If \texttt{Walk, Clean} were observed. The probability of it having been Rainy then Sunny is
+$$
+  I(\textnormal{Rainy})
+  \times
+  E(\textnormal{Rainy,Walk})
+  \times
+  T(\textnormal{Rainy, Sunny})
+  \times
+  E(\textnormal{Sunny, Clean})
+  =
+  0.6 \times 0.1 \times 0.3 \times 0.1
+  = 0.0018
+$$
+where $T(X, Y)$ is the probability of transitioning from state $X$ to state $Y$.
+
+The Viterbi algorithm uses dynamic programming to recursively explore these probabilies, and selects the sequence of states with the highest probability at the end.
 
 \chapter{Analysis}
 Since the high level aim of this project is to improve the performance of iHMMuneAlign, it was necessary to analyse the existing implementation in order to gain insight into its structure, as well as to create realistic aims.
@@ -180,6 +233,7 @@ There is also the language itself to consider: Java programs tend to be 2-3 time
 \subsection{Implementation Stages}
 The initial version of the new implementation will be loosely based off the already existing implementation. Once the code is rewritten and structured in a manner that lends itself to easy modification, the real optimization (such as threading, and caching computation) can begin.
 
+%TODO: add BLAST to dependencies
 \section{Dependencies of iHMMuneAlign}
 Apart from the codebase, the current implementation has several dependencies that perform significant amounts of computation. This section outlines how the new implementation will replicate their features.
 
