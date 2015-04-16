@@ -230,7 +230,6 @@ public class VnDnJCnoC
                 FiniteAlphabet a = (FiniteAlphabet) s.getDistribution().getAlphabet();
                 for (Iterator i = a.iterator(); i.hasNext();) {
                     Symbol sym = (Symbol) i.next();
-                    System.out.println(sym.getName());
                     try {
                         v_out.print(s.getDistribution().getWeight(sym) + " ");
                     } catch (IllegalSymbolException e) {
