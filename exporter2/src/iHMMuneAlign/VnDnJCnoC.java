@@ -219,35 +219,21 @@ public class VnDnJCnoC
         //germline nt, then each of the other three based on potential of mutation to that nt
         addVStates(vdj, vStates);
 
-        try {
-            if (v_out == null) {
-                v_out = new PrintStream(new File("v_probs.txt"));
-            }
-            v_out.println("Start_Model");
-            Utils.writeTo("v_names.txt", vSequence.getName());
-            for (Object o : vStates) {
-                SimpleEmissionState s = (SimpleEmissionState) o;
-                FiniteAlphabet a = (FiniteAlphabet) s.getDistribution().getAlphabet();
-                for (Iterator i = a.iterator(); i.hasNext();) {
-                    Symbol sym = (Symbol) i.next();
-                    try {
-                        v_out.print(s.getDistribution().getWeight(sym) + " ");
-                    } catch (IllegalSymbolException e) {
-                        e.printStackTrace();
-                    }
-                }
-                v_out.println();
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        Utils.writeTo("v_probs.txt", "Start_Model");
+        printStates(vSequence, vStates);
         if (chainType == 1) {// heavy chain
         	//add the D states (for all specified germline sequences from repertoire file) - each nt in a given seq gets its own state with emm dist set
         	addDStates(vdj, dStates);
+            for (Object sequence : dStates) {
+                printStates(vSequence, (ArrayList) sequence);
+            }
         }
         //add the J states (for all specified germline sequences from repertoire files - each nt in a given J gets own state based on emm data
         addJStates(vdj, jStates);
-        
+        for (Object sequence : jStates) {
+            printStates(vSequence, (ArrayList) sequence);
+        }
+
         /*
         // the V end exo counts - assuming this means that there were 145 sequence with 0, 82 with 1 nt lost, 32 with 2 and so on
         // not sure why these are here rather than in the probability holder like everything else
@@ -320,6 +306,26 @@ public class VnDnJCnoC
 		
 		//return the model
         return vdj;
+    }
+
+    private static void printStates(RichSequence vSequence, ArrayList vStates) {
+        if (v_out == null) {
+            v_out = Utils.getWriter("v_probs.txt");
+        }
+        Utils.writeTo("v_names.txt", vSequence.getName());
+        for (Object o : vStates) {
+            SimpleEmissionState s = (SimpleEmissionState) o;
+            FiniteAlphabet a = (FiniteAlphabet) s.getDistribution().getAlphabet();
+            for (Iterator i = a.iterator(); i.hasNext();) {
+                Symbol sym = (Symbol) i.next();
+                try {
+                    v_out.print(s.getDistribution().getWeight(sym) + " ");
+                } catch (IllegalSymbolException e) {
+                    e.printStackTrace();
+                }
+            }
+            v_out.println();
+        }
     }
 
     private void addVStates(SimpleMarkovModel vdj, ArrayList vStates)
