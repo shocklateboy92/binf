@@ -343,17 +343,6 @@ public class VnDnJCnoC
             throw new Error("Can't add v states to model");
         }
     }
-	
-	private void removeVStates(SimpleMarkovModel vdj, ArrayList vStates) {
-		try {
-			for (int i = 0; i < vStates.size(); i++) {
-				vdj.removeState((EmissionState)vStates.get(i));
-			}
-		}
-		catch (Exception e) {
-			throw new Error("Can't remove V states from model");
-		}
-	}
 
     private void addEmissionState(SimpleMarkovModel vdj, EmissionState emission_state)
     {
@@ -397,26 +386,6 @@ public class VnDnJCnoC
             throw new Error("Can't add D states to model");
         }
     }
-	
-	private void removeDstates(SimpleMarkovModel vdj, ArrayList dStates)
-	{
-		try {
-			for (int i = 0; i < dStates.size(); i++) {
-				ArrayList arraylist = (ArrayList)dStates.get(i);
-				if (DEBUGGING) {
-					System.out.println("Removing states from IGHD gene number " + i);
-				}
-				for (int j =0; j < arraylist.size(); j++) {
-					if (DEBUGGING) {
-						System.out.println("Removing state number " + j);
-					}
-					vdj.removeState((EmissionState)arraylist.get(j));
-				}
-			}
-		} catch (Exception e) {
-			throw new Error("Can't remove D states from model: " + e.getMessage());
-		}
-	}
 
     private void addJStates(SimpleMarkovModel vdj, ArrayList jStates)
     {
@@ -438,20 +407,6 @@ public class VnDnJCnoC
             throw new Error("Can't add J states to model");
         }
     }
-	
-	private void removeJStates(SimpleMarkovModel vdj, ArrayList jStates) {
-		try {
-			for (int i = 0; i < jStates.size(); i++) {
-				ArrayList arraylist = (ArrayList)jStates.get(i);
-				for (int j=0; j < arraylist.size(); j++) {
-					vdj.removeState((EmissionState)arraylist.get(j));
-				}
-			}
-		} catch (Exception e) {
-			throw new Error("Can't remove J states from model");
-		}
-		
-	}
 
     //sets the emission probs for the N1 region
     private void set_VD_Emission(Distribution nDist)
@@ -565,20 +520,7 @@ public class VnDnJCnoC
 			throw new Error("removeDotStates: " + e.getMessage());
 		}
 	}
-	
-	private void removeDotStates(MarkovModel vdj, DotState X1a, DotState X1b, DotState X2, DotState X3, DotState X8, DotState X9) {
-		try {
-			vdj.removeState(X1a);
-			vdj.removeState(X1b);
-			vdj.removeState(X2);
-			vdj.removeState(X3);
-			vdj.removeState(X8);
-			vdj.removeState(X9);
-		} catch (Exception e) {
-			throw new Error("removeDotStates: " + e.getMessage());
-		}
-	}
-									
+
 
     private EmissionState[] createNStates(int advance[], FiniteAlphabet dna, String geneName, boolean VD, int size)
     {
@@ -626,20 +568,6 @@ public class VnDnJCnoC
         }
 
     }
-	
-	private void removeNStates(EmissionState n_states[], MarkovModel vdj) {
-		for(int i = 0; i < n_states.length; i++)
-        {
-            try
-            {
-                vdj.removeState(n_states[i]);
-            }
-            catch(Exception ex)
-            {
-                throw new Error("removeNStates():  " + ex.getMessage());
-            }
-        }
-	}
 
     private void createVStates(int advance[], FiniteAlphabet dna, RichSequence vSequence, ArrayList vStates, ArrayList vStateDistributions, int VGene_start_offset, int completeVGeneLength,
             ProbabilityHolder probHolder, double A_probability)
@@ -1007,56 +935,8 @@ public class VnDnJCnoC
             throw new Error("set_VD_N_part_1_Transitions_multi():  " + e.getMessage());
         }
     }
-	
-	private void unset_VD_N_part_1_Transitions_multi(SimpleMarkovModel vdj, EmissionState N_53_states[], double N_53_Probs[], DotState X7a_states[], DotState X7b_states[], DotState X8, DotState X9)
-    {
-        try
-        {
-            EmissionState currN = null;
-            EmissionState nextN = null;
-			double nullTrans = 0D;
-            //double X7aiToP_endProb = P_probs[0];
-            //double X7aiToX8Prob = 1.0D - X7aiToP_endProb;
-			
-            //double X7biToX8Prob = 1.0D - toMagicalStateProb;
-            Distribution dist;
-			
-            //double X8ToN1Prob = N_53_Probs[0];
-            //double X8ToN1Prob = N_53_Probs[0] * (1 - toMagicalStateProb);
-            //double X8ToX9Prob = 1.0D - X8ToN1Prob - toMagicalStateProb;
-            dist = vdj.getWeights(X8);
-            dist.setWeight(N_53_states[0], nullTrans);
-            dist.setWeight(vdj.magicalState(), nullTrans);
-            //System.out.println("X8 to N2(1) set to " + X8ToN1Prob);
-            dist.setWeight(X9, nullTrans);
-            //System.out.println("X8 to X9 set to " + X8ToX9Prob);
-            for(int i = 0; i < N_53_states.length - 1; i++)
-            {
-                currN = N_53_states[i];
-                nextN = N_53_states[i + 1];
-                //double NToNProb = N_53_Probs[i + 1];
-                //double NToX9Prob = 1.0D - NToNProb - toMagicalStateProb;
-                dist = vdj.getWeights(currN);
-                dist.setWeight(nextN, nullTrans);
-                //System.out.println("currN to nextN set to " + NToNProb);
-                dist.setWeight(X9, nullTrans);
-                //System.out.println("currN to X9 set to " + NToX9Prob);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-            }
-			
-            //double finalNtoX9 = 1.0D - toMagicalStateProb;
-            dist = vdj.getWeights(nextN);
-            dist.setWeight(X9, nullTrans);
-            dist.setWeight(vdj.magicalState(), nullTrans);
-            //System.out.println("final N to X9 set to 1.0D");
-        }
-        catch(Exception e)
-        {
-            throw new Error("unset_VD_N_part_1_Transitions_multi():  " + e.getMessage());
-        }
-    }
-	
-	private void set_VD_N_part_1_Transitions(SimpleMarkovModel vdj, EmissionState N_53_states[], double N_53_Probs[], DotState X1a, DotState X1b, DotState X2, DotState X3)
+
+    private void set_VD_N_part_1_Transitions(SimpleMarkovModel vdj, EmissionState N_53_states[], double N_53_Probs[], DotState X1a, DotState X1b, DotState X2, DotState X3)
     {
         try
         {
@@ -1146,89 +1026,6 @@ public class VnDnJCnoC
         }
     }
 
-    //altered to get rid of P related parts
-    //private void set_VD_N_part_1_Transitions(SimpleMarkovModel vdj, EmissionState N_53_states[], double N_53_Probs[], DotState X1a, DotState X1b, DotState X2, DotState X3, EmissionState P_end_states[], double P_probs[])
-    private void unset_VD_N_part_1_Transitions(SimpleMarkovModel vdj, EmissionState N_53_states[], double N_53_Probs[], DotState X1a, DotState X1b, DotState X2, DotState X3)
-    {
-        try
-        {
-            // vars to hold the current and the next nt/state in the region
-            EmissionState currN = null;
-            EmissionState nextN = null;
-			double nullTrans = 0D;
-
-            //double X1aToX2Prob = nullTrans;
-            //get weights for X1a state
-            Distribution dist = vdj.getWeights(X1a);
-            //set prob for moving from X1a to X2
-            dist.setWeight(X2, nullTrans);
-            //System.out.println("X1a to X2 set to " +  X1aToX2Prob);
-
-            //prob for moving from exo v end to start of N region
-            //double X1bToX2Prob = 1.0D - toMagicalStateProb;
-            //get weights for the X1b (exo rem gene end)
-            dist = vdj.getWeights(X1b);
-            //set weight for moving to start of N
-            dist.setWeight(X2, nullTrans);
-            //System.out.println("X1b to X2 set to " +  X1bToX2Prob);
-
-            //get prob for moving to first N nt - from the N prob array
-            //double X2ToN1Prob = N_53_Probs[0];
-            //get prob for moving straight to end of the N region - so prob of NOT moving to first N
-            //double X2ToX3Prob = 1.0D - X2ToN1Prob - toMagicalStateProb;
-            //get weights for X2 (start N region)
-            dist = vdj.getWeights(X2);
-            //set the trans weights for moving to either first N or skipping the N region
-            dist.setWeight(N_53_states[0], nullTrans);
-            dist.setWeight(X3, nullTrans);
-            //System.out.println("X2 to N1(1) set to " +  X2ToN1Prob);
-            //System.out.println("X2 to X3 set to " +  X2ToX3Prob);
-
-            //set the magical state trans prob in accordance with the alignment model selected
-            dist = vdj.getWeights(X1a);
-            dist.setWeight(vdj.magicalState(), nullTrans);
-            dist = vdj.getWeights(X1b);
-            dist.setWeight(vdj.magicalState(), nullTrans);
-            dist = vdj.getWeights(N_53_states[0]);
-            dist.setWeight(vdj.magicalState(), nullTrans);
-            dist = vdj.getWeights(X2);
-            dist.setWeight(vdj.magicalState(), nullTrans);
-
-
-            //for each of the N states
-            for(int i = 0; i < N_53_states.length - 1; i++)
-            {
-                //get the current state and it's downstream neighbour
-                currN = N_53_states[i];
-                nextN = N_53_states[i + 1];
-
-                //get prob from prob array for adding (i)th N nucleotide
-                //double NToNProb = N_53_Probs[i + 1];
-                //get prob of not adding another nt, hence prob adding no further N
-                //double NToX3Prob = 1.0D - NToNProb - toMagicalStateProb;
-                //get weights for current N state/nt
-                dist = vdj.getWeights(currN);
-                //set weight of adding another N or moving to the end of the N
-                dist.setWeight(nextN, nullTrans);
-                dist.setWeight(X3, nullTrans);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-                //System.out.println("currN to nextN set to " +  NToNProb);
-                //System.out.println("currN to X3 set to " +  NToX3Prob);
-            }
-
-            //if get to the final N state, the set prob of moving to end of N state to 1
-            //double finalNtoX3 = 1.0D - toMagicalStateProb;
-            dist = vdj.getWeights(nextN);
-            dist.setWeight(X3, nullTrans);
-            dist.setWeight(vdj.magicalState(), nullTrans);
-            //System.out.println("finalN to X3 set to 1.0D");
-        }
-        catch(Exception e)
-        {
-            throw new Error("unset_VD_N_part_1_Transitions():  " + e.getMessage());
-        }
-    }
-
     //altered to get rid of the P reference
     //private void set_VD_N_part_2_Transitions_multi_P(SimpleMarkovModel vdj, DotState X3, DotState X5b_states[])
     private void set_VD_N_part_2_Transitions_multi(SimpleMarkovModel vdj, DotState X3, DotState X5b_states[])
@@ -1264,41 +1061,6 @@ public class VnDnJCnoC
         catch(Exception e)
         {
             throw new Error("set_VD_N_part_2_Transitions_multi_P():  " + e.getMessage());
-        }
-    }
-	
-	private void unset_VD_N_part_2_Transitions_multi(SimpleMarkovModel vdj, DotState X3, DotState X5b_states[])
-    {
-        try
-        {
-            //holders for the current and neighbouring state
-            EmissionState currN = null;
-            EmissionState nextN = null;
-			double nullTrans = 0D;
-			
-            //get the number of possible germline IGHD genes
-            double NUMBER_OF_DGENES = X5b_states.length;
-			
-			
-            //prob of moving from X3 (state between N and gene)
-            //equal probs given to each of the germline genes
-            //double X3ToX5bProb = ((1.0D - toMagicalStateProb) / (double)X5b_states.length);
-            //get the weights for the X3 states
-            Distribution dist = vdj.getWeights(X3);
-            dist.setWeight(vdj.magicalState(), nullTrans);
-			
-            //for each of the germline genes
-            for(int i = 0; i < X5b_states.length; i++)
-            {
-                //changed this from 1.0 to X3ToX5bProb
-                dist.setWeight(X5b_states[i],nullTrans);
-                //System.out.println("X3 to X5b[" + i +"] set to " +  X3ToX5bProb);
-            }
-			
-        }
-        catch(Exception e)
-        {
-            throw new Error("unset_VD_N_part_2_Transitions_multi_P():  " + e.getMessage());
         }
     }
 
@@ -1468,72 +1230,6 @@ public class VnDnJCnoC
         catch(Exception e)
         {
             throw new Error("SetVTransitions(): " + e.getMessage());
-        }
-    }
-	
-	private void unsetVTransitions(SimpleMarkovModel vdj, ArrayList vStates, DotState X1a, DotState X1b, ProbabilityHolder probHolder, int chainType)
-    {
-        try
-        {
-        	double V_end_exo_probs[] = null;
-			double nullTrans = 0D;
-			
-        	if (chainType == 1) {// heavy chain
-	        	EmissionState vState = (EmissionState)vStates.get(0);
-	            Annotation anno = vState.getAnnotation();
-	            StateInfo si = (StateInfo)anno.getProperty(null);
-	            int familyIndex = findFamilyIndex(si.geneName);
-	            double mean = probHolder.V_end_exo_mean_Fields[familyIndex - 1];
-	            double stdDev = probHolder.V_end_exo_stdDev_Fields[familyIndex - 1];
-	            V_end_exo_probs = probHolder.getExoProbArray(mean, stdDev, MIN_PROB_LIMIT, false);
-            } else if (chainType == 2) { //kappa
-            	V_end_exo_probs = probHolder.Kappa_V_end_exo_Fields;
-            } else if (chainType == 3) { //lambda
-            	V_end_exo_probs = probHolder.Lambda_V_end_exo_Fields;
-            }
-            
-	        EmissionState currVState = null;
-            EmissionState nextVState = null;
-            //double MagicalToVProb = 1.0D;
-            Distribution dist = vdj.getWeights(vdj.magicalState());
-            dist.setWeight((EmissionState)vStates.get(0), nullTrans);
-            if (DEBUGGING) {
-            	//System.out.println("magical to V1 set to " +  MagicalToVProb);
-            }
-            int v_size = vStates.size();
-            int probArrayIndex = 1;
-            for(int i = 0; i < v_size - 1; i++)
-            {
-                currVState = (EmissionState)vStates.get(i);
-                nextVState = (EmissionState)vStates.get(i + 1);
-                dist = vdj.getWeights(currVState);
-                if(v_size - i <= V_end_exo_probs.length)
-                {
-                    //double temp = V_end_exo_probs[v_size - i - 1];
-                    //double VToVProb = 1.0D - temp;
-                    dist.setWeight(nextVState, nullTrans);
-                    dist.setWeight(X1b, nullTrans);
-                    if (DEBUGGING) {
-                    	//System.out.println("currV to nextV set to " + VToVProb + " and currV to X1b set to " + temp);
-                    }
-                } else
-                {
-                    dist.setWeight(nextVState, nullTrans);
-                    if (DEBUGGING) {
-                   		//System.out.println("currV to nextV set to 1.0");
-                   	}
-				}
-            }
-			
-            dist = vdj.getWeights(nextVState);
-            dist.setWeight(X1a, nullTrans);
-            if (DEBUGGING) {
-            	//System.out.println("final V to X1a set to 1.0");
-            }
-        }
-        catch(Exception e)
-        {
-            throw new Error("unSetVTransitions(): " + e.getMessage());
         }
     }
 
@@ -1824,184 +1520,6 @@ public class VnDnJCnoC
             throw new Error("setDTransitions_multi():  " + e.getMessage());
         }
     }
-	
-	private void unsetDTransitions_multi(SimpleMarkovModel vdj, DotState X5b_states[], DotState X5a_states[], ArrayList dStates, DotState X7a_states[], DotState X7b_states[], ProbabilityHolder probHolder, DotState X8)
-    {
-        try
-        {
-            //arrays to hold the start and end exonuclease probs
-            double D_start_exo_probs[] = (double[])null;
-            double D_end_exo_probs[] = (double[])null;
-            //hold the current and neighbouring states
-            EmissionState currD = null;
-            EmissionState nextD = null;
-			double nullTrans = 0D;
-            //hold the exo prob and the remainder
-            //double exo_prob = 0.0D;
-            //double remainder = 0.0D;
-            //start of exo prob index
-            int D_end_exo_prob_index = 1;
-            //number of germline ighd genes
-            int dGeneCount = dStates.size();
-			
-            //for each ighd from the germline repertoire
-            for(int i = 0; i < dStates.size(); i++)
-            {
-                //get the nts/states for the current germline gene
-                ArrayList dSequence = (ArrayList)dStates.get(i);
-                //get the length of the current germline sequence which is equal to number of states
-                int dSize = dSequence.size();
-                //get the first state for the current germline gene
-                EmissionState dState = (EmissionState)dSequence.get(0);
-                //get the annotation associated with the first state
-                Annotation anno = dState.getAnnotation();
-                //use the annotation to determine the germline gene family number
-                StateInfo si = (StateInfo)anno.getProperty(null);
-                int familyIndex = findFamilyIndex(si.geneName);
-                //get the mean exonuclease for the 5` end of the ighd gene for the associated ighd family
-                double mean_start = probHolder.D_start_exo_mean_Fields[familyIndex - 1];
-                //get the std dev for exonuclease the 51 end of the ighd gene family
-                double stdDev_start = probHolder.D_start_exo_stdDev_Fields[familyIndex - 1];
-                //create the exo probs array using normal dist and the provided mean and stdev for the current ighd family
-                D_start_exo_probs = probHolder.getExoProbArray(mean_start, stdDev_start, MIN_PROB_LIMIT, false);
-                //repeat for the 3` (end) end of the ighd gene
-                double mean_end = probHolder.D_end_exo_mean_Fields[familyIndex - 1];
-                double stdDev_end = probHolder.D_end_exo_stdDev_Fields[familyIndex - 1];
-                D_end_exo_probs = probHolder.getExoProbArray(mean_end, stdDev_end, MIN_PROB_LIMIT, false);
-				
-                //get prob for zero exo rems from the start of the ighd gene
-                //double no_exo_start_prob = D_start_exo_probs[0];
-                //prob for moving from X5b to the non-exo state (X5a) equal to prob of there being no exo removals
-                //double X5biToX5aiProb = no_exo_start_prob;
-                Distribution dist = vdj.getWeights(X5b_states[i]);
-                //set prob for moving to the non exo state equal to prob of zero exo rems
-                dist.setWeight(X5a_states[i], nullTrans);
-				vdj.destroyTransition(X5b_states[i],X5a_states[i]);
-				if (DEBUGGING) {
-					System.out.println("destoyTransitions called for X5b to X5a");
-				}
-                dist.setWeight(vdj.magicalState(), nullTrans);
-				vdj.destroyTransition(X5b_states[i],vdj.magicalState());
-				if (DEBUGGING) {
-					System.out.println("destoyTransitions called for X5b to magicalState");
-				}
-				
-                dist.setWeight(dState,nullTrans);
-				vdj.destroyTransition(X5b_states[i],dState);
-				if (DEBUGGING) {
-					System.out.println("destoyTransitions called for X5b to dState");
-				}
-				
-                //System.out.println("X5b[" + i + "] to X5a[" + i + "] set to " + X5biToX5aiProb);
-                //System.out.println("X5b[" + i + "] to D1 set to 0.0");
-                //System.out.println("X5b[" + i + "] to MagicalState set to " + toMagicalStateProb);
-                //no link to D1 from the non-exo state that i can see at the moment
-                vdj.getWeights(X5a_states[i]);
-                //double X5atoD1 = 1.0D - toMagicalStateProb;
-                dist.setWeight(dState, nullTrans);
-				vdj.destroyTransition(X5a_states[i],dState);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-				vdj.destroyTransition(X5a_states[i],vdj.magicalState());
-                //System.out.println("X5a[" + i + "] to D1 set to 1.0");
-                //sets the link between first and second D nts to 1, as we only start linking the dStates from the second nt below
-                //double D1toD2 = 1.0D - toMagicalStateProb;
-                dist = vdj.getWeights(dState);
-                dist.setWeight((EmissionState)dSequence.get(1), nullTrans);
-				vdj.destroyTransition(dState, (EmissionState)dSequence.get(1));
-                dist.setWeight(vdj.magicalState(), nullTrans);
-				vdj.destroyTransition(dState, vdj.magicalState());
-                //D_end_exo_prob_index = 1;
-				
-                //for each ighd state - ie each d nucleotide - starts from the second nt
-                for(int j = 1; j < dSequence.size() - 1; j++)
-                {
-                    //get the current and the neighbouring state
-                    currD = (EmissionState)dSequence.get(j);
-                    nextD = (EmissionState)dSequence.get(j + 1);
-					
-                    //remainder = 1.0D - toMagicalStateProb;
-                    //if the current state is within possible 5` exo removals
-                    if(j < D_start_exo_probs.length)
-                    {
-                        //get prob for associated level of exo removals
-                        //exo_prob = D_start_exo_probs[j];
-                        //get the weights for the 5` d exo
-                        dist = vdj.getWeights(X5b_states[i]);
-                        //set the weight for moving from X5 to currD equal to exo prob
-                        dist.setWeight(currD, nullTrans);
-						vdj.destroyTransition(X5b_states[i],currD);
-                        dist.setWeight(vdj.magicalState(), nullTrans);
-						vdj.destroyTransition(X5b_states[i], vdj.magicalState());
-                        //am assuming that the exo probs get lower as they are probs of observing given levels of exo
-                        //but as we get more nts into the ighd it should be more likely to move out of this state
-                        //as more chance the sequence is part of the D rather than not
-                        //see what happens for (1-exo_prob)
-                        //double tempProb = 1.0D - exo_prob;
-                        //dist.setWeight(currD, tempProb);
-						// System.out.println("X5b[" + i + "] to currD[" + j + "] set to " + exo_prob);
-                    }
-					
-                    if(j==D_start_exo_probs.length) {
-                        //if the 5' exo was completed - ie still in the exo state but up to the final dstate
-                        //double finalExoToD = 1.0D - toMagicalStateProb;
-                        dist = vdj.getWeights(X5b_states[i]);
-                        dist.setWeight(currD, nullTrans);
-						vdj.destroyTransition(X5b_states[i],currD);
-                        dist.setWeight(vdj.magicalState(), nullTrans);
-						vdj.destroyTransition(X5b_states[i],vdj.magicalState());
-						// System.out.println("X5b (" + i + ") to currD(" + j + ") set to 1.0");
-                    }
-					
-                    //if current state is within possible 3` exo removals
-                    if(dSize - j <= D_end_exo_probs.length)
-                    {
-                        //get prob for associated level of exo rem
-                        //exo_prob = D_end_exo_probs[dSize - j - 1];
-                        //get the prob of not being exo
-                        //1 - prob exo
-                        //remainder -= exo_prob;
-                        //get the weights for the currD
-                        dist = vdj.getWeights(currD);
-                        //set the weight of moving into the exo state
-                        dist.setWeight(X7b_states[i], nullTrans);
-						vdj.destroyTransition(currD, X7b_states[i]);
-						//  System.out.println("currD[" + j + "] to X7b[" + i + "] to  set to " + exo_prob);
-                    }
-					
-                    //set the prob of moving to the next D state equal to the prob that there isn't exo removal
-                    dist = vdj.getWeights(currD);
-                    dist.setWeight(nextD, nullTrans);
-					vdj.destroyTransition(currD, nextD);
-                    dist.setWeight(vdj.magicalState(), nullTrans);
-					vdj.destroyTransition(currD, vdj.magicalState());
-					//  System.out.println("currD to nextD (" + j + ") set to " + remainder);
-                }
-				
-                //for the final N state set the prob of moving to the no exo 3` state to 1
-                //double finalDtoNoExo = 1.0D - toMagicalStateProb;
-                dist = vdj.getWeights(nextD);
-                dist.setWeight(X7a_states[i], nullTrans);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-				//  System.out.println("finalD to X7a (" + i + ") set to 1.0");
-				
-                //for moving from the end states to the start of the N2
-                //double DendToX8 = 1.0D - toMagicalStateProb;
-                dist = vdj.getWeights(X7a_states[i]);
-                dist.setWeight(X8, nullTrans);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-                dist = vdj.getWeights(X7b_states[i]);
-                dist.setWeight(X8, nullTrans);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-				
-				//  System.out.println("X7a and X7b [" + i + " to X8 set to 1.0");
-            }
-			
-        }
-        catch(Exception e)
-        {
-            throw new Error("unsetDTransitions_multi():  " + e.getMessage());
-        }
-    }
 
     private void createJTransitions(SimpleMarkovModel vdj, DotState X11a_states[], DotState X11b_states[], ArrayList jStates, ProbabilityHolder probHolder, int chainType, boolean removed_C_Region)
     {
@@ -2239,181 +1757,7 @@ public class VnDnJCnoC
             throw new Error("setJTransitions:  " + e.getMessage());
         }
     }
-	
-	private void unsetJTransitions(SimpleMarkovModel vdj, DotState X11b_states[], DotState X11a_states[], ArrayList jStates, ProbabilityHolder probHolder, int chainType, boolean removed_C_Region)
-    {
-        try
-        {
-            //array for the j exo probs
-            double J_start_exo_probs[] = (double[])null;
-            //states to hold curr, neighbouring and final j
-            EmissionState currJ = null;
-            EmissionState nextJ = null;
-            EmissionState lastJ = null;
-			double nullTrans = 0D;
-			
-            //number of germline j gene sequences
-            int jGeneCount = jStates.size();
-			
-            //for each of the germline j gene sequences
-            for(int i = 0; i < jStates.size(); i++)
-            {
-                //get the states/nts for the current germline sequence
-                ArrayList jSequence = (ArrayList)jStates.get(i);
-                //get the length of the current germline sequence
-                int jSize = jSequence.size();
-                //get the first ighj state/nt
-                EmissionState jState = (EmissionState)jSequence.get(0);
-                if (chainType == 1) {// heavy chain
-	                //get the annotation associated with the first state/nt
-	                Annotation anno = jState.getAnnotation();
-	                //use the annotation to determine the ighj family number
-	                StateInfo si = (StateInfo)anno.getProperty(null);
-	                int familyIndex = findFamilyIndex(si.geneName);
-	                //get the mean and std dev corresponding to the current ighj family
-	                double mean_start = probHolder.J_start_exo_mean_Fields[familyIndex - 1];
-	                double stdDev_start = probHolder.J_start_exo_stdDev_Fields[familyIndex - 1];
-	                //use the mean and std dev to create exo probs using a normal distribution
-	                J_start_exo_probs = probHolder.getExoProbArray(mean_start, stdDev_start, MIN_PROB_LIMIT, false);
-                } else if (chainType == 2) { //kappa
-                	J_start_exo_probs = probHolder.Kappa_J_start_exo_Fields;
-                } else if (chainType == 3) { //lambda
-                	J_start_exo_probs = probHolder.Lambda_J_start_exo_Fields;
-                }
-                //get the prob of no exo rems from the start of the ighj gene
-                //double J_start_no_exo_prob = J_start_exo_probs[0];
-                //prob for moving from exo to non exo state for j start equal to prob that there are zero exo rems
-                //double X11biToX11aiProb = J_start_no_exo_prob - toMagicalStateProb;
-                //set probs for moving from exo to non exo states
-                Distribution dist = vdj.getWeights(X11b_states[i]);
-                dist.setWeight(X11a_states[i], nullTrans);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-                dist.setWeight(jState,nullTrans);
-                if (DEBUGGING) {
-                	//System.out.println("X11b_states[" + i + "] to X11a_states [" + i + "] set to " + X11biToX11aiProb);
-                	//System.out.println("X11b_states[" + i + "] to J1 set to 0.0");
-                }
-				
-                //need to set probs for X11a to J1
-                //double X11aToJ1 = 1.0D - toMagicalStateProb;
-                dist = vdj.getWeights(X11a_states[i]);
-                dist.setWeight(jState, nullTrans);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-                if (DEBUGGING) {
-                	//System.out.println("X11a_states[" + i + "] to J1 set to 1.0");
-                }
-                //set prob for first to second j to one
-                //double J1toJ2 = 1.0D - toMagicalStateProb;
-                dist = vdj.getWeights(jState);
-                dist.setWeight((EmissionState)jSequence.get(1), nullTrans);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-                if (DEBUGGING) {
-                	//System.out.println("J1 to J2 set to 1.0D");
-                }
-				
-                //for each of the jstates/ighj nts up to the second last
-                for(int j = 1; j < jSequence.size() - 2; j++)
-                {
-                    //get the current and the neighbouring nt
-                    currJ = (EmissionState)jSequence.get(j);
-                    nextJ = (EmissionState)jSequence.get(j + 1);
-                    //also get the nt two upstream as need to be check for the end of the V-D-J rearrangement
-                    lastJ = (EmissionState)jSequence.get(j + 2);
-                    //if the current nt/state falls into the range of possible j start exo rems
-                    if(j < J_start_exo_probs.length)
-                    {
-                        //get the prob for the associated with the current number of exo rems
-                        //double exo_prob = J_start_exo_probs[j];
-                        //set the prob for moving from the exo rem state into the J gene equal to the exo prob
-                        //check this...... should it be 1-prob of exo because prob of exo is for staying in exo state
-                        //where as we are setting prob for moving from the exo state into the j state... CHECK!!!!
-                        dist = vdj.getWeights(X11b_states[i]);
-                        dist.setWeight(currJ, nullTrans);
-                        dist.setWeight(vdj.magicalState(), nullTrans);
-                        if (DEBUGGING) {
-                        	//System.out.println("X11b_states[" + i + "] to currJ(" + j + ") set to " + exo_prob);
-                        }
-                    }
-					
-                    if(j == J_start_exo_probs.length) {
-						//double JExoFinalToJ = 1.0D - toMagicalStateProb;
-						dist = vdj.getWeights(X11b_states[i]);
-						dist.setWeight(currJ, nullTrans);
-						dist.setWeight(vdj.magicalState(), nullTrans);
-						if (DEBUGGING) {
-							//System.out.println("X11b_states[" + i + "] to currJ(" + j + ") set to 1.0D");
-						}
-                    }
-					
-					
-                    //if the is no downstream sequence that has been removed then need to check if we have reached the end
-                    //double remainder = 1.0D;
-                    if(!removed_C_Region) //if(removed_C_Region)
-                    {
-						//    System.out.println("for removed c region");
-						//    //prob for moving from current nt back to the magical state because we are at the end of the ighj
-						//    //not sure where this comes from -- check!!!!
-                        //double JtoMagicalProb = 0.02D;
-                        //toMagicalStateProb = JtoMagicalProb;
-						//    //set prob for moving from the current j to the maginal state
-						//    dist = vdj.getWeights(currJ);
-						//    dist.setWeight(vdj.magicalState(), JtoMagicalProb);
-						//    System.out.println("currJ(" + j + ") to magicalState set to " + JtoMagicalProb);
-						//    //prob of not moving to the magical state
-						//    remainder -= JtoMagicalProb;
-                    }
-					
-                    //set the prob of moving onto the next jstate equal to the prob that we are not at the end
-                    //1 - J to Magical Prob for those with no removal or just to one for those with removal
-                    //remainder = 1.0D - toMagicalStateProb;
-                    dist = vdj.getWeights(currJ);
-                    dist.setWeight(nextJ, nullTrans);
-                    dist.setWeight(vdj.magicalState(), nullTrans);
-                    if (DEBUGGING) {
-                    	//System.out.println("currJ(" + j + ") to nextJ set to " + remainder);
-                    	//System.out.println("currJ(" + j + ") to magical state " + toMagicalStateProb);
-                    }
-                }
-				
-				
-                //yet to deal with the second last and final nucleotide
-                //double secondLastJtoMagicalProb;
-                //double secondLastJtoLastJProb;
-                //if the c region has been removed
-                /*if(removed_C_Region)
-                {
-                    secondLastJtoMagicalProb = 0.5D;
-                    secondLastJtoLastJProb = 1.0D - secondLastJtoMagicalProb;
-                } else //if the C region hasn't been removed
-                {
-                    secondLastJtoMagicalProb = 0.02D;
-                    secondLastJtoLastJProb = 1.0D - secondLastJtoMagicalProb;
-                }*/
-                //set weights for the neighbouring nt moving into the magical state
-                // or for moving onto the last J
-                dist = vdj.getWeights(nextJ);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-                dist.setWeight(lastJ, nullTrans);
-                if (DEBUGGING) {
-                	//System.out.println("second last J to magical set to " + secondLastJtoMagicalProb);
-                	//System.out.println("second last J to last J set to " + secondLastJtoLastJProb);
-                }
-                //double JXlastToMagicalProb = 1.0D;
-                //set weights for the last J moving to the magical state
-                dist = vdj.getWeights(lastJ);
-                dist.setWeight(vdj.magicalState(), nullTrans);
-                if (DEBUGGING) {
-	            	//System.out.println("last J to magical set to " +  JXlastToMagicalProb);
-	            }
-            }
-			
-        }
-        catch(Exception e)
-        {
-            throw new Error("unsetJTransitions:  " + e.getMessage());
-        }
-    }
-	
+
 
     private double getSum(double array[])
     {
@@ -2637,33 +1981,5 @@ public class VnDnJCnoC
             throw new Error("setNucleotideGeneEmission():  " + ille.getMessage());
         }
     }
-	
-	//destroy model and return empty model
-	public MarkovModel destroyModel() {
-		//MarkovModel emptyMarkovModel = null;
-		
-		//attempt to destry the markov model including listeners and hash tables
-		if (DEBUGGING) {
-			System.out.println("(VpnpDpnpCnoC:destroyModel) Attempting to destroy the Markov Model references and listeners to allow garbage collection.");
-		}
-		
-		//unset all the transition probs
-		unsetJTransitions(vdj, X11b_states, X11a_states, jStates, probHolder, chainType, removed_C_Region);
-		unsetDTransitions_multi(vdj, X5b_states, X5a_states, dStates, X7a_states, X7b_states, probHolder, X8);
-		unsetVTransitions(vdj, vStates, X1a, X1b, probHolder, chainType);
-		unset_VD_N_part_2_Transitions_multi(vdj, X3, X5b_states);
-		unset_VD_N_part_1_Transitions_multi(vdj, DJ_N_states, probHolder.DJ_N_Fields, X7a_states, X7b_states, X8, X9);
-		//need to add in kappa vs heavy chain for states
-		unset_VD_N_part_1_Transitions(vdj, VD_N_states, probHolder.VD_N_Fields, X1a, X1b, X2, X3);
-		
-		//remove the states from the model
-		removeDstates(vdj, dStates);
-		removeVStates(vdj, vStates);
-		removeJStates(vdj, jStates);
-		removeNStates(DJ_N_states, vdj);
-		removeNStates(VD_N_states, vdj);
-		removeDotStates(vdj, X1a, X1b, X2, X3, X8, X9);
-		
-		return vdj;
-	}
+
 }
