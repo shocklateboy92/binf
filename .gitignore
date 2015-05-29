@@ -1,0 +1,13 @@
+# Old parts - don't want to worry now
+seminar/*
+reportA/*
+
+# Qt Creator
+*.user
+
+# IntelliJ/CLion
+*.idea
+*.iml
+
+exporter/out
+exporter2/out
