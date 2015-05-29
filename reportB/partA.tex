@@ -1,0 +1,265 @@
+\chapter{Introduction}
+
+\section{Immunoglobulin recombination}
+
+% TODO: source these figures
+\begin{figure}
+  \includegraphics[width=\textwidth]{rearrangement.pdf}
+  \caption{The IGHV, IGHD and IGHJ gene recombination process}
+  \label{fig:combination}
+\end{figure}
+\begin{figure}
+  \centering
+  \includegraphics[width=12cm]{hmm-graph.pdf}
+  \caption{An example Hidden Markov Model \autocite{wiki-hmm}}
+  \label{fig:hmm}
+\end{figure}
+
+The human immune system faces many challenges when dealing with foreign pathogens invading the body. One of them is identifying and classifying antigens that are not only vastly diverse, but also constantly mutating and evolving.
+
+It does so by creating immunoglobulins (also called antibodies) whose job is to identify and bind to certain antigens, effectively marking them for destruction by the rest of the immune system. The process, by necessity is highly selective - a given antibody will only bind to a very specific antigen.
+
+However, to deal with the highly diverse and evolving nature of foreign antigens, antibodies must mutate very rapidly. This allows them to be as diverse as the antigens they face, and adapt to bind to newly encountered pathogens.
+
+The process (essentially randomly) selects 3 germline genes from a repertoire in the person's DNA  potentially consisting of between 38 and 45 IGHV genes \autocite{lefranc05, li02}, 23 IGHD genes \autocite{lee06} and 6 IGHJ \autocite{ravetch81} genes. These selected genes are then mutated (adding, removing or changing nucleotides) to generate further diversity. The antibodies that successfully bind to the antigen emit a chemical signal, which then encourages the production of similar antibodies. This entire process is illustrated in \ref{fig:combination} and explained in more detail by Ga\"{e}ta \textit{et al.}\autocite{iHMMuneAlign}.
+
+\section{iHMMuneAlign}
+
+As a result of this gene recombination and mutation process, the germline genes often don't provide much information on rearranged genes found in the B-Cells that create the antibodies themselves.
+
+Developed in 2007 by a team of researchers at UNSW, iHMMuneAlign attempts to simulate the process of immunoglobulin gene rearrangement.\autocite{iHMMuneAlign}.It represents the recombination process of immunoglobulin heavy chain genes as a hidden Markov model, and then uses it to find the most probable set of germline genes that created the rearranged gene.
+
+First, it selects the most likely IGHV germline gene from its repertoire of possible V genes, using the NCBI's Basic Local Alignment Search Tool (BLAST) \autocite{blast}. It then constructs a Hidden Markov Model with that IGHV gene, and all the possible IGHD and IGHJ genes, together with other states representing the somatic mutation.
+
+It then uses the Viterbi algorithm to determine the most likely sequence of states (genes and their mutations) that caused the observed emissions (the rearranged sequence given as input).
+
+\section{Hidden Markov Models}
+
+A Hidden Markov Model is effectively a Markov Chain, where the states cannot be observed directly. They are used in a wide variety of machine learning applications, including speech recognition \autocite{hmm}.
+
+An example of a HMM is shown in \ref{fig:hmm}. In this example, if the sequence of emissions \texttt{Walk} was observed, the probability of it being \texttt{Sunny} is
+$$I\left(\textnormal{Sunny}\right) \times E(\textnormal{Sunny},\textnormal{Walk}) = 0.4 \times 0.6 = 0.24$$
+and the probability of it being Rainy is
+$$I(\textnormal{Rainy}) \times E(\textnormal{Rainy,Walk}) =
+0.6 \times 0.1 = 0.06$$
+where $I(X)$ is the initial probability of $X$ and $E(X,Y)$ is the emission probability of state $Y$ in state $X$.
+
+If \texttt{Walk, Clean} were observed. The probability of it having been Rainy then Sunny is
+$$
+  I(\textnormal{Rainy})
+  \times
+  E(\textnormal{Rainy,Walk})
+  \times
+  T(\textnormal{Rainy, Sunny})
+  \times
+  E(\textnormal{Sunny, Clean})
+  =
+  0.6 \times 0.1 \times 0.3 \times 0.1
+  = 0.0018
+$$
+where $T(X, Y)$ is the probability of transitioning from state $X$ to state $Y$.
+
+The Viterbi algorithm uses dynamic programming to recursively explore these probabilities, and selects the sequence of states with the highest probability at the end.
+
+\chapter{Analysis}
+Since the high level aim of this project is to improve the performance of iHMMuneAlign, it was necessary to analyse the existing implementation in order to gain insight into its structure, as well as to create realistic aims.
+
+\section{Run Time}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      axis lines = left,
+      xlabel = Total sequences,
+      ylabel = Time (Seconds),
+      cycle list name=color list
+    ]
+
+      \input{data}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Total time taken (in seconds) to process the number of sequences (Wall-clock time). $n$ is the number of sequences per invocation of the program}
+  \label{fig:runtime}
+\end{figure}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      axis lines = left,
+      xlabel = Total sequences,
+      ylabel = Time (Seconds),
+      cycle list name=color list
+    ]
+
+      \input{data2}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Total time spent doing work by each CPU on behalf of the process during execution (CPU Time). $n$ is the number of sequences per invocation of the program}
+  \label{fig:usertime}
+\end{figure}
+
+One of the primary attributes of performance, is run time. We begin by measuring the run time of the existing implementation and -more importantly- how it grows with workload.
+
+The current implementation consists of a Java executable and a shell script, to allow running in batches. The Java executable (which does the actual processing) takes a range of input from the script and attempts to process that many in parallel. It then invokes Java program after breaking up the entire range into batches of a given size.
+
+Since we are interested in the rate the total runtime changes with workload as well with increasing parallelism, both were measured. It was run with a total workload ranging from 1 sequences to 100 sequences, with batch size ranging from 1 to 8. The results are shown in \ref{fig:runtime}.
+
+Note that this was performed on a machine with an AMD Phenom II 1090T (6-core) processor, 8GB of RAM and a solid state hard drive.
+
+%TODO: add reference about schedulers
+\subsection{Interpretation of Results}
+\label{sec:threadbench}
+With a batch size of 1, the expected linear increase was present. However, increasing the batch size shows a more sporadic decrease in runtime. There could be a number of causes for this, including the threads being assigned different CPUs by the scheduler on some runs but not others, increasing cache misses. Nonetheless, it wasn't investigated further, due to time constraints, and the fact that we didn't need such high accuracy for this test. However, there is an overall decrease in total execution time, as the batch size increases.
+
+This suggests that the existing implementation is concurrent, and will utilize all the available processing power on the CPU. However, that should have diminishing returns once the amount of threads exceeds the total number of CPU cores on the machine, which is not the case here - execution time continues to decrease at roughly the same pace as $n$ increases.
+
+Looking at the total CPU time spent on the process, rather than total execution time provided a theory (which was later confirmed in Section \ref{sec:threadprof}, on page \pageref{sec:threadprof}) to explain this behaviour.
+For each invocation of the Java program, there is a significant amount of overhead. For example, the Java Virtual Machine (JVM) needs to be initialized, it needs to load the program, analyse and perform any JIT compilation (Just-in-Time compilation, to improve execution time \autocite{jit}). The program also needs to read in the repertoire data files for each gene and process them. On top of all that, any data that are being cached by the operating system on behalf of the program will be invalidated. Since this only needs to be done once per batch, as the batch sizes increases (and the number of batches decrease), this overhead also decreases.
+
+This is clearly apparent in \ref{fig:usertime}, which shows that the total work done by the program to process all the sequences is reduced significantly as the $n$ increases.
+
+Comparing the total executable time (wall clock time) and the total CPU time of each run shows, that there was roughly double the CPU time as execution time. This indicates that the program has 2 threads of execution, but that it doesn't increase threads with workload.
+
+
+\section{Profiling}
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=\textwidth]{threads-graph.png}
+  \caption{Time spent by each thread;
+  running (\protect\includegraphics{jprofiler_images/ff00c400_bff000000.png}) and
+  waiting (\protect\includegraphics{jprofiler_images/ffffc400_bff000000.png})}
+  \label{fig:threadgraph}
+\end{figure}
+\begin{figure}[p]
+  \includegraphics[width=\textwidth]{call-tree.pdf}
+ \caption{The call graph generated by jProfiler, for a single run of iHMMuneAlign}
+ \label{fig:callgraph}
+\end{figure}
+In order to determine the most appropriate approaches for improving performance and overcoming the limitations of the original implementation, further analysis is required. Specifically, we are interested in which parts of the program consume the most CPU time and memory, as well as how they increase with the workload.
+
+The method for collecting this data is called profiling. Since the original implementation of iHMMuneAlign was written in Java, we can use various interfaces in the Java Virtual Machine (JVM) to gather this data. The JVM has an interface called Java Native Interface (JNI)\autocite{jni}, that allows external programs and native libraries (usually written in C/C++) to interact with Java objects. Alongside that, from Java version 1.5 onwards, the JVM also provides another interface, called Java Virtual Machine Tool Interface (JVMTI), which allows external tools to be notified as certain events (such as object allocation, method call) occur during execution.
+
+In \ref{fig:callgraph}, the data for a run of iHMMuneAlign with 6 sequences, instrumented by jProfiler \autocite{jprofiler} (a profiler implemented with the above method) is shown.
+
+\subsection{CPU Call Graph}
+\label{sec:cpuprof}
+Figure \ref{fig:callgraph} shows the time, and the percentage of total execution time spent in each method invocation of a single execution of iHMMuneAlign.
+
+It begins with the equivalent of the \texttt{main()} function for a thread using Java's built in threading library - \texttt{Thread.run()}, which in turn calls \texttt{startAlignment()}. However, it becomes immediately apparent that the majority of execution time from there is spent in the BioJava library.
+
+68\% of total execution time is spent constructing a \texttt{org.biojava.bio.dp.SingleDP} object, which will allow various algorithms (including Viterbi) to be performed. It takes a \texttt{org.biojava.bio.dp.MarkovModel} object, which represents the Markov Model, and converts it to its own internal format. This conversion involves sorting all the states, which is what 53.9\% of the whole program's execution time is spent on.
+
+For our purposes, this conversion is unnecessary, as we can generate the states ourselves, and can easily do so in the order necessary to run Viterbi on them. The actual call to the \texttt{DP.viterbi()} method, which actually runs the Viterbi algorithm to determine the most likely sequence of states, takes only 5.0\% of the total execution time.
+
+\subsection{Threads}
+\label{sec:threadprof}
+An important aspect of the existing implementation is its threading model - i.e. how it distributes the workload between multiple threads of execution (which can then run on multiple CPUs or CPU cores). Since we already determined in Section \ref{sec:threadbench} that it does indeed use multiple threads, we need to look more closely at exactly how it does so.
+
+For this, we have our profiler record events in the \texttt{java.util.concurrent} package, which include thread creation, destruction and blocking (waiting for another thread to complete). The results of this, shown in \ref{fig:threadgraph} confirm our earlier hypothesis. The program has two threads active most of the time; one processing the gene, and one (main thread) waiting for it to complete, before starting the next one.
+
+The fact that they use a threading library indicates that the original authors intended to make iHMMuneAlign a concurrent program, processing multiple gene sequences in parallel. While their architecture would have been less performance efficient than using a thread pool (as they have to pay the cost of thread creation and destruction for each sequence), it would still have caused a notable improvement if they allowed the threads to execute in parallel.
+
+Nonetheless, the fact that the main thread doesn't create each thread until its predecessor terminates indicates said efforts of parallelism were abandoned. It is widely regarded in industry that concurrent programming is rather difficult and the original authors most likely deemed completing the project was more prudent than making it concurrent.
+
+No further investigation was done to determine what would need to be done in order to make the current implementation concurrent, as it will most likely be rewritten for this project.
+
+\chapter{Proposed Solution}
+
+\section{Re-implementing From Scratch}
+
+Based on the above analysis, it is clear that the original codebase has many pitfalls, and limitations that make it difficult to proceed further.
+
+\subsection{Code Maintainability}
+Most of the logic for processing a gene sequence is contained in the \begin{center}
+  \texttt{AlignmentThread.startAlignment()}
+\end{center}
+method, which over 2000 lines long. The project doesn't use any revision control systems, and the fact it is littered with commented out code most likely indicates that it didn't do so at any point in the past either.
+
+There are no unit tests that cover most of the program logic, and it would be difficult to write any, since the logic hasn't been split up. This makes it rather difficult to make changes, without introducing any new subtle bugs, or undesired behaviour.
+
+The original authors are no longer available to provide assistance for understanding their codebase, and the style guide they followed (or lack thereof) makes it difficult to read and follow.
+
+It is understandable that the original authors did not prioritize long term code maintainability, as they could have been rushed for time, or they may have deemed it unlikely their could would be used and maintained 7 years later.
+
+\subsection{Concurrency / Thread Safety}
+
+Concurrency must be considered from the very early design decisions onwards, for a program to be efficient and parallel. The fact the original authors abandoned their efforts for parallelism indicates that there may have been concurrency bugs, like race conditions \autocite{raceconditions} that are very difficult to trace.
+
+Access to shared data must be carefully controlled, and synchronized to avoid data corruption (and race conditions). The potentially high overhead of synchronization should lead to program structure designs where shared data between threads is minimal. In addition, the thread safety of any libraries used must be carefully considered - if a class is not thread safe, it shouldn't be shared  between threads; and if a class is not re-entrant, there shouldn't even be separate instances in different threads.
+
+\subsection{Libraries and Language}
+Some of the libraries that the original authors used have since been deprecated. The specific libraries are mentioned in more detail below. Considering that some libraries account for most of the performance inefficiencies of the program (as shown in Section \ref{sec:cpuprof}), they will certainly need to be replaced. Since the libraries' APIs heavily influenced the structure of the code, replacing them while maintaining the existing code structure will be a difficult task.
+
+There is also the language itself to consider: Java programs tend to be 2-3 times slower than their equivalent C++ counterparts, and even more so in CPU bound tasks like this \autocite{qtvjava}. Reimplementing from scratch will allow us to do so in a different language. C++ is a good candidate - it is quite popular for constructing large scale, high performance applications \autocite{cpp}; it contains high concepts from high level languages, while still allowing for low level optimizations, including memory management.
+
+\subsection{Implementation Stages}
+The initial version of the new implementation will be loosely based off the already existing implementation. Once the code is rewritten and structured in a manner that lends itself to easy modification, the real optimization (such as threading, and caching computation) can begin.
+
+%TODO: add BLAST to dependencies
+\section{Dependencies of iHMMuneAlign}
+Apart from the codebase, the current implementation has several dependencies that perform significant amounts of computation. This section outlines how the new implementation will replicate their features.
+
+\subsection{BioJava}
+BioJava \autocite{biojava}is a general purpose Bioinformatics library, that contains several useful features for iHMMuneAlign. However, since iHMMuneAlign was written, BioJava has undergone a complete restructuring \autocite{biojava3}, and most -if not all- the modules the original implementation uses have been deprecated.
+
+\subsubsection{Fasta Reader}
+FASTA was originally the format used by a program that bore its name to store databases of DNA sequences \autocite{fasta}. These days, it is commonly used in Bioinformatics to represent large quantities of gene sequences within a file. BioJava could parse files FASTA format and convert them to its in-memory representation, which were then used by iHMMuneAlign. Since we no longer intend to use BioJava, an alternate method was required to parse the inputs and repertoire files for each genes was required. Since the FASTA format is a very simple format, a custom parser could be built quite easily. In addition, the NCBI C++ Toolkit can also be used to trivially parse FASTA files.
+
+\subsubsection{Bioinformatic Data Structures}
+BioJava contains a large collection of pre-built data structures to represent commonly occurring biological objects and concepts (E.g. RichSequenece, FiniteAlphabet). Here we have several viable solutions.
+
+\paragraph{Bio++}
+is a set of general purpose Bioinformatics libraries written in C++ \autocite{bpp}. Much like BioJava, it also provides various pre built data structures that represent various biological entities, like gene sequences. However, how well they correspond to the used data structures from BioJava and how useful they are when re-implementing is yet to be seen.
+
+%% sensible (text),from this point on
+\paragraph{Qt}
+is a C++ framework, originally created by Trolltech and now maintained by Digia \autocite{qt}. It has various components that assist in the rapid building of user interfaces, as well complex systems and algorithms. While they are less specific to biology, they are designed for speed and efficiency. Once the initial version is built using Bio++, if Bio++'s data structures are deemed a significant performance bottleneck, new ones will be custom built using Qt's support structure.
+
+\paragraph{STL}
+The Standard Template Library (STL) that accompanies C++ also contains a series of very high performance, generic data structures and algorithms \autocite{stl}. However, it is widely considered to be less user friendly than its alternatives, like Qt. For this reason, Qt's data structures were selected as the primary candidate for a custom implementation, and if they cause a significant performance limitation, they will be replaced by their STL counterparts.
+
+\paragraph{Boost}
+is another, highly comprehensive set of libraries that extend the functionality of the STL \autocite{boost}. Select features from Boost often end up in subsequent revisions of the STL. Should functionality of the STL be insufficient to replace the Qt implementation once it's been deemed a performance bottleneck, Boost will be used to compensate.
+
+\subsection{DP Module}
+We have determined in Section \ref{sec:cpuprof} that the DP module (in the \texttt{org.biojava.bio.dp} package) accounts for more than two thirds of the total runtime, with half on a data conversion that is ultimately unnecessary.
+
+Since the iHMMuneAlign was written, BioJava has undergone a major overhaul \autocite{biojava3} and the entire module is now deprecated. For replacing the parts of its functionality that could have been useful moving forward (namely, the implementation of Viterbi algorithm), we have two choices:
+
+\subsection{External Library}
+Considering Hidden Markov Models are a very popular for a variety of applications \autocite{hmm}, there are several C++ implementations available for use. For this, two of them were evaluated
+
+\paragraph{MLPack} is a scalable C++ machine learning library \autocite{mlpack}, by the Georgia Institute of Technology. It has a module to deal with Hidden Markov Models, which includes an implementation of Viterbi. However, the implementation entertains the possibility of every state transitioning to every other state, and as such performed too slow in our tests.
+
+\paragraph{StochHMM} is a library and set of tools dealing with Hidden Markov Models, by the University of California \autocite{stochhmm}. Its evaluation was done by feeding in the model as a text file to its Viterbi solver, which crashed. The cause of the crash was not determined, as we moved on to other solutions.
+
+\subsection{Custom Implementation}
+After the failures of the other approaches, the possibility of implementing the algorithm ourselves was evaluated. A proof of concept implementation was created, tested with a roughly equivalent workload, and showed an order of magnitude improvement over the original solver from BioJava.
+
+Later on in the project, specifically when the model generation code is implemented, its performance can be evaluated more accurately. The final decision regarding its use will be made at the time, depending on the performance of the alternatives.
+
+\section{Concurrency}
+Since the advent of multi-core and multi-processor machines, concurrent has become essential for high performance applications \autocite{freelunch}. Since clock speeds have stagnated, yet the parallelism available in modern hardware continues to rise designing our implementation to be concurrent from the start will ensure that it can take advantage of the speed improvements granted by future generations processors.
+
+The nature of our problem presents us two obvious ways of splitting it up to distribute over multiple threads of execution.
+
+\subsection{Per Sequence}
+ The fundamental idea is to have each processing a different input gene sequence at the same time. This is the approach the authors of the original implementation attempted, although their implementation created a new thread for each sequence.
+
+ Creating a thread requires at least one system call (which is very expensive \autocite{syscalls}) and destroying requires another. Additionally, the operating system has to do more book-keeping, as well as preparing a bunch of extra resources for the thread, which then have to be cleaned up - causing a significant performance cost \autocite{threads}.
+
+ A much better performing design would be to create a pool of worker threads at the start, and a queue of sequences for them to process. Each thread will then pop the sequence at the top of the queue, process it, write out the result, pop the sequence that is now at the head of the queue and repeat. In this case, the primary limitation for parallelism would come from the queue itself - by virtue of being a shared data structure, it would require synchronization to maintain consistency \autocite{concurrency}.
+
+ If the synchronization overhead of the queue is found to be a significant limitation on parallelism, it can be skipped altogether. Since all the inputs sequences are passed to the program in a file, the file itself can be partitioned - then each thread would read, parse and process all the sequences within a partition.
+
+ Doing so has the advantage that it will reduce the synchronization necessary between threads. On the other hand, if the sequences in some partitions require significantly less work than others, some threads would finish much quicker than others and be idling instead of doing useful work. This can be mitigated somewhat, by using a technique called work stealing \autocite{workstealing}, where threads that have finished all their jobs take pending jobs from other threads.
+
+\subsection{Per Processing Stage}
+
+The other way, is to consider each sequence as a series of tasks, and perform each one in a different thread. It's infeasible to speed up the processing of an individual sequence using this method, as most (if not all) of these tasks would depend on the results of the previous, and initializing a thread could take longer than some of the tasks.
+
+Considering that the goal of the project is to scale well with increasing numbers of sequences, the following approach makes more sense; tasks can be done in batches. I.e. have $n$ threads process the first stage of $n\times k$ sequences (where $k$ is an integer constant), and then have all $n$ threads process the second stage and so on. This has the primary advantage of having much greater data locality (decreasing the working set, page faults, cache misses) and increasing performance significantly \autocite{locality}.
+
+Per contra, this approach will be heavily reliant on multiple work queues to distribute the tasks of different sequences between threads. As explained in the above section, the synchronization overhead of the queues may become a serious bottleneck on parallelism - even more so, due to the much heavier reliance on it.
+
+%TODO: mention stuff about pthreads, TBB, QtThread etc.

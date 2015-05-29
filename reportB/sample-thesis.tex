@@ -31,6 +31,16 @@
 %% My own LaTeX macros, definitions, etc
 \include{definitions}
 
+\usepackage{hyperref}
+
+\usepackage{pgfplots}
+\pgfplotsset{width=12cm,compat=1.9}
+
+%\usepgfplotslibrary{external}
+%\tikzexternalize
+
+\usepackage[backend=biber]{biblatex}
+\addbibresource{pubs.bib}
 
 \begin{document}
 
@@ -44,13 +54,12 @@
 
 \tableofcontents
 \listoffigures  % if required
-\listoftables  % if required
+%\listoftables  % if required
 
 %% pages in the ``mainmatter'' section have arabic page numbers and chapters are numbered
 \mainmatter
 
-\include{introduction}
-\include{background}
+\include{partA}
 \include{mywork}
 \include{evaluation}
 \include{conclusion}
@@ -58,8 +67,8 @@
 %% chapters in the ``backmatter'' section do not have chapter numbering
 %% text in the ``backmatter'' is single spaced
 \backmatter
-\bibliographystyle{alpha}
-\bibliography{pubs}
+%\bibliographystyle{alpha}
+\printbibliography
 
 \include{appendix1}
 \include{appendix2}
