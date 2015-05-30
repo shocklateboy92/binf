@@ -1,29 +1,63 @@
 \chapter{Design \& Implementation}
 
 \section{Initialization}
-Since iHMMuneAlign is rather configurable, it requires a large amount of input data for each run that cannot be embedded in the code directly. This data has to be read during program initialization and stored in memory such that it can be efficiently used in their required of the algorithm.
+Since iHMMuneAlign is rather configurable, it requires a large amount of input data for each run that cannot be embedded in the code directly. This data has to be read during program initialisation and stored in memory such that it can be efficiently used in their required of the algorithm.
 \subsection{D/J Repertoires}
 \subsection{V Repertoire}
 \subsection{Mutation Ratios}
 
 \section{Pipeline}
+
+\begin{figure}
+	\label{fig:pipeline}
+	\caption{Overview of the Model Solving `Pipeline'}
+	\centering
+	\begin{dot2tex}
+		digraph G {
+
+			{
+				1;
+				2;
+				3;
+				4;
+			}
+
+			{
+				node[color=none];
+				"Input Sequence" -> 1;
+				"BLAST Hit" -> 1;
+
+				1 -> "A Score" -> 2;
+
+				2 -> "States" -> 3;
+				2 -> "Transitions" -> 3;
+
+				3 -> "Most Likely Path" -> 4;
+				4 -> "Output";
+			}
+		}
+	\end{dot2tex}
+\end{figure}
+
 The entire process of creating a HMM to represent \igh recombination and solving it using Viterbi's algorithm can be split up into several smaller problems. These can be viewed as stages in an assembly line where the result of each one feeds into the next, terminating with the final result. In computing, this is called a pipeline.
 
 \subsection{BLAST}
-The first step is to determine the most likely germline V gene is in the target sequence. Fortunately, this can be determined quite efficiently by aligning the input sequence with all known V genes \cite{IHMMuneAlign}. For we opted to use the excellent alignment tool by NCBI: BLAST \cite{blast}, like the original implementation.
+The first step is to determine the most likely germline V gene is in the target sequence. Fortunately, this can be determined quite efficiently by aligning the input sequence with all known V genes \cite{iHMMuneAlign}. For that we opted to use the excellent alignment tool by NCBI: BLAST \cite{blast}, like the original implementation.
 
 BLAST is distributed as source code, and can be used in two ways:
-\subsubsection{Binary}
-There are binaries for all the common tasks, that take in sequence repertoires as files in FASTA \cite{fasta} format. The previous implementation used the \code{blastn} executable, which takes in a sequence in FASTA format, and writes the results (matching sequences in the repertoires) out to an XML file.
-\subsubsection{Shared Library}
+\subsubsection{Using Binary}
+There are binaries for all the common tasks, that take in sequence repertoires as files in FASTA \autocite{fasta} format. The previous implementation used the \code{blastn} executable, which takes in a sequence in FASTA format, and writes the results (matching sequences in the repertoires) out to an XML file.
+\subsubsection{Using as Shared Library}
+\lipsum[1]
 
-\subsection{Parsing Blast}
-\subsection{Calculate A-Score}
-\subsection{Build Model}
-\subsection{Solve Model}
-\subsection{Print Results}
+\subsection{Parsing Blast Results}
+\subsection{Calculating A-Score}
+\subsection{Generating Model}
+\subsubsection{Generating V/D/J States}
+\subsubsection{Generating Transitions}
+\subsection{Running Viterbi}
+\subsection{Printing Results}
 
-Insert diagram of pipeline in dotty here
 
 \section{Approach}
 Talk about agile here.
