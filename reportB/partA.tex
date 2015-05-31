@@ -116,7 +116,7 @@ This suggests that the existing implementation is concurrent, and will utilize a
 Looking at the total CPU time spent on the process, rather than total execution time provided a theory (which was later confirmed in Section \ref{sec:threadprof}, on page \pageref{sec:threadprof}) to explain this behaviour.
 For each invocation of the Java program, there is a significant amount of overhead. For example, the Java Virtual Machine (JVM) needs to be initialized, it needs to load the program, analyse and perform any JIT compilation (Just-in-Time compilation, to improve execution time \autocite{jit}). The program also needs to read in the repertoire data files for each gene and process them. On top of all that, any data that are being cached by the operating system on behalf of the program will be invalidated. Since this only needs to be done once per batch, as the batch sizes increases (and the number of batches decrease), this overhead also decreases.
 
-This is clearly apparent in \ref{fig:usertime}, which shows that the total work done by the program to process all the sequences is reduced significantly as the $n$ increases.
+This is clearly apparent in \autoref{fig:usertime}, which shows that the total work done by the program to process all the sequences is reduced significantly as the $n$ increases.
 
 Comparing the total executable time (wall clock time) and the total CPU time of each run shows, that there was roughly double the CPU time as execution time. This indicates that the program has 2 threads of execution, but that it doesn't increase threads with workload.
 
