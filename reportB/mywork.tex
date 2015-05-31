@@ -56,9 +56,12 @@ The primary advantage of using blast in this manner would be the ease of develop
 	\item[Reading Input Files]
 	The executable would then have to read the database files from disk again, instead of using the copy that already in memory (residing in iHMMuneAlign's address space).
 	\item[Serialising Results]
-	Once the blast executable completes its alignment search, it will then need to convert that data into a human readable, or standardised format that can be parsed by iHMMuneAlign.
+	BLAST, like most high performance programs, uses its own internal intermediate representation for the input and germline genes\autocite{blast}. Once the alignment search is completed, it will then need to convert that data into a human readable, or standardised format that can be parsed by iHMMuneAlign.
 	\item[Transferring Results]
-	disk, ipc
+    Modern operating systems provide a certain level of isolation, such that a process can not directly access data in a section of memory belonging to another process \autocite{address-spaces}. As a result, the previous implementation required the BLAST executable to write its results to disk so it could be read.
+    
+    While IO operations are generally expensive, ones involving disk access tend to be especially so. This is due to the fact that disks are several orders of magnitude slower than main memory (RAM). 
+	
 \end{description}
 
 \subsubsection{Linking Shared Library}
