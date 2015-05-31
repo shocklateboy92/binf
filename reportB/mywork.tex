@@ -45,9 +45,10 @@ The entire process of creating a HMM to represent \igh recombination and solving
 The first step is to determine the most likely germline V gene is in the target sequence. Fortunately, this can be determined quite efficiently by aligning the input sequence with all known V genes \cite{iHMMuneAlign}. For that we opted to use the excellent alignment tool by NCBI: BLAST \cite{blast}, like the original implementation.
 
 BLAST is distributed as source code, and can be used in two ways:
-\subsubsection{Using Binary}
+\subsubsection{Invoking Binary}
 There are binaries for all the common tasks, that take in sequence repertoires as files in FASTA \autocite{fasta} format. The previous implementation used the \code{blastn} executable, which takes in a sequence in FASTA format, and writes the results (matching sequences in the repertoires) out to an XML file.
-\subsubsection{Using as Shared Library}
+
+\subsubsection{Linking Shared Library}
 \lipsum[1]
 
 \subsection{Parsing Blast Results}
