@@ -21,7 +21,7 @@ It does so by creating immunoglobulins (also called antibodies) whose job is to 
 
 However, to deal with the highly diverse and evolving nature of foreign antigens, antibodies must mutate very rapidly. This allows them to be as diverse as the antigens they face, and adapt to bind to newly encountered pathogens.
 
-The process (essentially randomly) selects 3 germline genes from a repertoire in the person's DNA  potentially consisting of between 38 and 45 IGHV genes \autocite{lefranc05, li02}, 23 IGHD genes \autocite{lee06} and 6 IGHJ \autocite{ravetch81} genes. These selected genes are then mutated (adding, removing or changing nucleotides) to generate further diversity. The antibodies that successfully bind to the antigen emit a chemical signal, which then encourages the production of similar antibodies. This entire process is illustrated in \ref{fig:combination} and explained in more detail by Ga\"{e}ta \textit{et al.}\autocite{iHMMuneAlign}.
+The process (essentially randomly) selects 3 germline genes from a repertoire in the person's DNA  potentially consisting of between 38 and 45 IGHV genes \autocite{lefranc05, li02}, 23 IGHD genes \autocite{lee06} and 6 IGHJ \autocite{ravetch81} genes. These selected genes are then mutated (adding, removing or changing nucleotides) to generate further diversity. The antibodies that successfully bind to the antigen emit a chemical signal, which then encourages the production of similar antibodies. This entire process is illustrated in \autoref{fig:combination} and explained in more detail by Ga\"{e}ta \textit{et al.}\autocite{iHMMuneAlign}.
 
 \section{iHMMuneAlign}
 
@@ -37,7 +37,7 @@ It then uses the Viterbi algorithm to determine the most likely sequence of stat
 
 A Hidden Markov Model is effectively a Markov Chain, where the states cannot be observed directly. They are used in a wide variety of machine learning applications, including speech recognition \autocite{hmm}.
 
-An example of a HMM is shown in \ref{fig:hmm}. In this example, if the sequence of emissions \texttt{Walk} was observed, the probability of it being \texttt{Sunny} is
+An example of a HMM is shown in \autoref{fig:hmm}. In this example, if the sequence of emissions \texttt{Walk} was observed, the probability of it being \texttt{Sunny} is
 $$I\left(\textnormal{Sunny}\right) \times E(\textnormal{Sunny},\textnormal{Walk}) = 0.4 \times 0.6 = 0.24$$
 and the probability of it being Rainy is
 $$I(\textnormal{Rainy}) \times E(\textnormal{Rainy,Walk}) =
@@ -102,7 +102,7 @@ One of the primary attributes of performance, is run time. We begin by measuring
 
 The current implementation consists of a Java executable and a shell script, to allow running in batches. The Java executable (which does the actual processing) takes a range of input from the script and attempts to process that many in parallel. It then invokes Java program after breaking up the entire range into batches of a given size.
 
-Since we are interested in the rate the total runtime changes with workload as well with increasing parallelism, both were measured. It was run with a total workload ranging from 1 sequences to 100 sequences, with batch size ranging from 1 to 8. The results are shown in \ref{fig:runtime}.
+Since we are interested in the rate the total runtime changes with workload as well with increasing parallelism, both were measured. It was run with a total workload ranging from 1 sequences to 100 sequences, with batch size ranging from 1 to 8. The results are shown in \autoref{fig:runtime}.
 
 Note that this was performed on a machine with an AMD Phenom II 1090T (6-core) processor, 8GB of RAM and a solid state hard drive.
 
@@ -139,11 +139,11 @@ In order to determine the most appropriate approaches for improving performance 
 
 The method for collecting this data is called profiling. Since the original implementation of iHMMuneAlign was written in Java, we can use various interfaces in the Java Virtual Machine (JVM) to gather this data. The JVM has an interface called Java Native Interface (JNI)\autocite{jni}, that allows external programs and native libraries (usually written in C/C++) to interact with Java objects. Alongside that, from Java version 1.5 onwards, the JVM also provides another interface, called Java Virtual Machine Tool Interface (JVMTI), which allows external tools to be notified as certain events (such as object allocation, method call) occur during execution.
 
-In \ref{fig:callgraph}, the data for a run of iHMMuneAlign with 6 sequences, instrumented by jProfiler \autocite{jprofiler} (a profiler implemented with the above method) is shown.
+In \autoref{fig:callgraph}, the data for a run of iHMMuneAlign with 6 sequences, instrumented by jProfiler \autocite{jprofiler} (a profiler implemented with the above method) is shown.
 
 \subsection{CPU Call Graph}
 \label{sec:cpuprof}
-Figure \ref{fig:callgraph} shows the time, and the percentage of total execution time spent in each method invocation of a single execution of iHMMuneAlign.
+Figure \autoref{fig:callgraph} shows the time, and the percentage of total execution time spent in each method invocation of a single execution of iHMMuneAlign.
 
 It begins with the equivalent of the \texttt{main()} function for a thread using Java's built in threading library - \texttt{Thread.run()}, which in turn calls \texttt{startAlignment()}. However, it becomes immediately apparent that the majority of execution time from there is spent in the BioJava library.
 
@@ -155,7 +155,7 @@ For our purposes, this conversion is unnecessary, as we can generate the states 
 \label{sec:threadprof}
 An important aspect of the existing implementation is its threading model - i.e. how it distributes the workload between multiple threads of execution (which can then run on multiple CPUs or CPU cores). Since we already determined in Section \ref{sec:threadbench} that it does indeed use multiple threads, we need to look more closely at exactly how it does so.
 
-For this, we have our profiler record events in the \texttt{java.util.concurrent} package, which include thread creation, destruction and blocking (waiting for another thread to complete). The results of this, shown in \ref{fig:threadgraph} confirm our earlier hypothesis. The program has two threads active most of the time; one processing the gene, and one (main thread) waiting for it to complete, before starting the next one.
+For this, we have our profiler record events in the \texttt{java.util.concurrent} package, which include thread creation, destruction and blocking (waiting for another thread to complete). The results of this, shown in \autoref{fig:threadgraph} confirm our earlier hypothesis. The program has two threads active most of the time; one processing the gene, and one (main thread) waiting for it to complete, before starting the next one.
 
 The fact that they use a threading library indicates that the original authors intended to make iHMMuneAlign a concurrent program, processing multiple gene sequences in parallel. While their architecture would have been less performance efficient than using a thread pool (as they have to pay the cost of thread creation and destruction for each sequence), it would still have caused a notable improvement if they allowed the threads to execute in parallel.
 

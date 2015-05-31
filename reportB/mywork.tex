@@ -2,9 +2,43 @@
 
 \section{Initialization}
 Since iHMMuneAlign is rather configurable, it requires a large amount of input data for each run that cannot be embedded in the code directly. This data has to be read during program initialisation and stored in memory such that it can be efficiently used in their required of the algorithm.
+
 \subsection{D/J Repertoires}
+The use-case for the germline IGHD and IGHJ repertoires are farily straight forward. For each nucleotide in each gene, a state needs to be created that represents the probability that gene caused it to be there.
+
+Since this needs to be done for each gene/nucleotide in order, there's no need for random access, or efficient searching. They're stored in a contiguous block of memory in a dynamic (variable size) array. This provides good cache/memory locality \autocite{cache-locality}, while being easy to use.
+
 \subsection{V Repertoire}
+Unlike the other two genes, not every IGHV gene needs to be in the model. Instead, a BLAST search is performed, and (for now, at least) only the most likely hit --the closest germline IGHV gene-- is used.
+
+However, the BLAST results do not in fact give the sequence in its output; It only presents the relevant matching/aligned section of the sequence. Fortunately, it also gives the (unique) name of the gene, as specified in the repertoire file it was given.
+
+Consequently, an index must be built from the gene repertoire that maps each gene name to its corresponding sequence. Considering this lookup needs to be done for each model, it should be as efficient as possible. This index is currently stored as a hash-table in memory, allowing for efficient, constant time lookup \autocite{hash-table}.
+
 \subsection{Mutation Ratios}
+A large part of what iHMMuneAlign attempts to model is mutation of various germline genes, during the recombination process. While it is known that some nucleotides are more likely to mutate to a certain one than others, determining this is out of scope for iHMMuneAlign \autocite{iHMMuneAlign}. As a result, iHMMuneAlign takes in these probabilities as input.
+
+A simple map from a nucleotide to nucleotide would not be sufficient, as it depends on the two surrounding nucleotides as well. These ratios are given in a format specific to the previous implementation of iHMMuneAlign; an example can be seen in Figure \ref{fig:mutation-probs}.
+
+\begin{verbbox}
+A(A->C)A 	0.200711181
+A(A->C)C 	0.234567901
+A(A->C)G 	0.090360982
+A(A->C)T 	0.249740516
+A(A->G)A 	0.698044251
+A(A->G)C 	0.679012346
+A(A->G)G 	0.798111707
+A(A->G)T 	0.533465028
+A(A->T)A 	0.101244567
+A(A->T)C 	0.086419753
+\end{verbbox}
+
+\begin{figure}
+    \label{fig:mutation-probs}
+    \centering
+    \theverbbox
+    \caption{An extract of a mutation probabilities file}
+\end{figure}
 
 \section{BLAST}
 The first step is to determine the most likely germline V gene is in the target sequence. Fortunately, this can be determined quite efficiently by aligning the input sequence with all known V genes \cite{iHMMuneAlign}. For that we opted to use the excellent alignment tool by NCBI: BLAST \cite{blast}, like the original implementation.
@@ -57,6 +91,8 @@ At the time of writing, the current implementation of iHMMuneAlign assumes the \
 
 \section{Pipeline}
 
+% Notes: use autosize option to get more vertical space
+% 		 use texlbl="\tex" instead of label="words"
 \begin{figure}
 	\label{fig:pipeline}
 	\caption{Overview of the Model Solving `Pipeline'}
@@ -65,10 +101,10 @@ At the time of writing, the current implementation of iHMMuneAlign assumes the \
 		digraph G {
 
 			{
-				1;
-				2;
-				3;
-				4;
+				1[label="calculateAScore"];
+				2[label="buildModel"];
+				3[label="doViterbi"];
+				4[label="generateResult"];
 			}
 
 			{
@@ -84,6 +120,7 @@ At the time of writing, the current implementation of iHMMuneAlign assumes the \
 				3 -> "Most Likely Path" -> 4;
 				4 -> "Output";
 			}
+
 		}
 	\end{dot2tex}
 \end{figure}
@@ -91,6 +128,7 @@ At the time of writing, the current implementation of iHMMuneAlign assumes the \
 The entire process of creating a HMM to represent \igh recombination and solving it using Viterbi's algorithm can be split up into several smaller problems. These can be viewed as stages in an assembly line where the result of each one feeds into the next, terminating with the final result. In computing, this is called a pipeline.
 
 \subsection{Parsing Blast Results}
+
 \subsection{Calculating A-Score}
 \subsection{Generating Model}
 \subsubsection{Generating V/D/J States}
