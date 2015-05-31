@@ -131,7 +131,7 @@ At the time of writing, the current implementation of iHMMuneAlign assumes the \
 The entire process of creating a HMM to represent \igh recombination and solving it using Viterbi's algorithm can be split up into several smaller problems. These can be viewed as stages in an assembly line where the result of each one feeds into the next, terminating with the final result. In computing, this is called a pipeline.
 
 \subsection{Parsing Blast Results}
-
+The \code{blastn} executable is invoked, the IGHV gene is pre-aligned, and its output (all the hits) are presented to iHMMuneAlign. 
 \subsection{Calculating A-Score}
 \subsection{Generating Model}
 \subsubsection{Generating V/D/J States}
@@ -140,16 +140,3 @@ The entire process of creating a HMM to represent \igh recombination and solving
 \subsection{Printing Results}
 
 
-\section{Approach}
-Talk about agile here.
-
-\chapter{Maintenance}
-Talk about how I attempted to improve maintainability/readability here
-
-\section{Revision Control}
-Explain how revision control will help future maintenance 
-
-\chapter{Performance}
-Talk about how I set off to improve performance here
-
-\section{Blast Lib}
