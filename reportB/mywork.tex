@@ -48,8 +48,21 @@ BLAST is distributed as source code, and can be used in two ways:
 \subsubsection{Invoking Binary}
 There are binaries for all the common tasks, that take in sequence repertoires as files in FASTA \autocite{fasta} format. The previous implementation used the \code{blastn} executable, which takes in a sequence in FASTA format, and writes the results (matching sequences in the repertoires) out to an XML file.
 
+The primary advantage of using blast in this manner would be the ease of development. Since the binaries come pre-packaged, very little extra code would be required to invoke the binary from within iHMMuneAlign, and parse the XML output. However, doing so incurs a (potentially significant) performance penalty at run time due to the cost of
+
+\begin{description}
+	\item[Process Creation]
+	The operating system has to create a new process for the blast executable, perform all its bookkeeping operations, and clean up after it is completed.
+	\item[Reading Input Files]
+	The executable would then have to read the database files from disk again, instead of using the copy that already in memory (residing in iHMMuneAlign's address space).
+	\item[Serialising Results]
+	Once the blast executable completes its alignment search, it will then need to convert that data into a human readable, or standardised format that can be parsed by iHMMuneAlign.
+	\item[Transferring Results]
+	disk, ipc
+\end{description}
+
 \subsubsection{Linking Shared Library}
-\lipsum[1]
+BLAST+ can be 
 
 \subsection{Parsing Blast Results}
 \subsection{Calculating A-Score}
