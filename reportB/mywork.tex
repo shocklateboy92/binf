@@ -6,6 +6,55 @@ Since iHMMuneAlign is rather configurable, it requires a large amount of input d
 \subsection{V Repertoire}
 \subsection{Mutation Ratios}
 
+\section{BLAST}
+The first step is to determine the most likely germline V gene is in the target sequence. Fortunately, this can be determined quite efficiently by aligning the input sequence with all known V genes \cite{iHMMuneAlign}. For that we opted to use the excellent alignment tool by NCBI: BLAST \cite{blast}, like the original implementation.
+
+BLAST is distributed as source code, and can be used in two ways:
+\subsection{Invoking Binary}
+\label{sec:blast-bin}
+There are binaries for all the common tasks, that take in sequence repertoires as files in FASTA \autocite{fasta} format. The previous implementation used the \code{blastn} executable, which takes in a sequence in FASTA format, and writes the results (matching sequences in the repertoires) out to an XML file.
+
+The primary advantage of using blast in this manner would be the ease of development. Since the binaries come pre-packaged, very little extra code would be required to invoke the binary from within iHMMuneAlign, and parse the XML output. However, doing so incurs a (potentially significant) performance penalty at run time due to the cost of:
+
+\begin{description}
+	\item[Process Creation]
+	The operating system has to create a new process for the blast executable, perform all its bookkeeping operations, and clean up after it is completed.
+	\item[Reading Input Files]
+	The executable would then have to read the database files from disk again, instead of using the copy that already in memory (residing in iHMMuneAlign's address space).
+	\item[Serialising Results]
+	BLAST, like most high performance programs, uses its own internal intermediate representation for the input and germline genes\autocite{blast}. Once the alignment search is completed, it will then need to convert that data into a human readable, or standardised format that can be parsed by iHMMuneAlign.
+	\item[Transferring Results]
+    Modern operating systems provide a certain level of isolation, such that a process can not directly access data in a section of memory belonging to another process \autocite{address-spaces}. As a result, the previous implementation required the BLAST executable to write its results to disk so it could be read.
+    
+    While IO operations are generally expensive, ones involving disk access tend to be especially so. This is due to the fact that disks are several orders of magnitude slower than main memory (RAM).
+\end{description}
+
+As explained in \secref{sec:threadbench}, these overheads were partially responsible for large performance inefficiencies in the original implementation. 
+
+\subsection{Linking Shared Library}
+\label{sec:blast-lib}
+BLAST+ can also be compiled as a library, that can be statically or dynamically linked the target program using it. This would the alignment search to be performed directly in the process of iHMMuneAlign, effectively eliminating all of the overheads listed in the previous section.
+
+The disadvantage of this approach is that it requires extra work during the development of iHMMuneAlign. This includes the work required for:
+\begin{description}
+	\item[Acquiring Libraries]
+	The BLAST+ binary executables are quite prevalent in bioinformatics research and as such, they are readily available for most research/development platforms. The libraries however, are much less common, as they are generally used by developers working on production tools relating to BLAST+. 
+	
+	This would require researching the build process used by the BLAST+ libraries. This is a non-trivial task, as the documentation is somewhat lacking, and makes implicit assumptions about the build environment which do not necessarily hold outside of NCBI lab machines.
+	\item[Programming for Libraries]
+	The binaries accept the input data and germline repertoires in FASTA format, and it outputs in XML. Both of these are widely used, standard formats; There are a range of utilities in most languages to deal with them. As a result, very little code would need to be written specifically for it.
+	
+	Using the data-structures that comprise the internal representations used by the BLAST directly, would be much more complicated. And once again, the documentation regarding were not as comprehensive as they could have been.
+	\item[Distributing Libraries]
+	The binaries are quite widespread, well known, and can be assumed to be already available on machines that iHMMuneAlign would run on. Thus, it would be the users' responsibility to ensure they have it installed on their machine, as it's a required dependency.
+	
+	That same assumption can not be made for the library, and as a result we must distribute it with the program. Also --and more significantly--, the libraries must be available to the compiler when iHMMuneAlign is being built; This would significantly increase the work required to port iHMMuneAlign to a new platform, as well as making it infeasible to distribute primarily as source code.
+\end{description}
+
+Due to the performance considerations described in \secref{sec:blast-bin}, the we opted to link to the BLAST libraries, and perform the alignment search directly in iHMMuneAlign. However, after spending a significant amount of time attempting to overcome the difficulties detailed in \secref{sec:blast-lib}, we elected to use the binaries for now. 
+
+At the time of writing, the current implementation of iHMMuneAlign assumes the \code{blastn} binary has already been invoked, and expects to be given its results in XML format. This process can be made into a script easily, and will be revisited at a later date, once more impactful performance optimisations have been exhausted.
+
 \section{Pipeline}
 
 \begin{figure}
@@ -40,32 +89,6 @@ Since iHMMuneAlign is rather configurable, it requires a large amount of input d
 \end{figure}
 
 The entire process of creating a HMM to represent \igh recombination and solving it using Viterbi's algorithm can be split up into several smaller problems. These can be viewed as stages in an assembly line where the result of each one feeds into the next, terminating with the final result. In computing, this is called a pipeline.
-
-\subsection{BLAST}
-The first step is to determine the most likely germline V gene is in the target sequence. Fortunately, this can be determined quite efficiently by aligning the input sequence with all known V genes \cite{iHMMuneAlign}. For that we opted to use the excellent alignment tool by NCBI: BLAST \cite{blast}, like the original implementation.
-
-BLAST is distributed as source code, and can be used in two ways:
-\subsubsection{Invoking Binary}
-There are binaries for all the common tasks, that take in sequence repertoires as files in FASTA \autocite{fasta} format. The previous implementation used the \code{blastn} executable, which takes in a sequence in FASTA format, and writes the results (matching sequences in the repertoires) out to an XML file.
-
-The primary advantage of using blast in this manner would be the ease of development. Since the binaries come pre-packaged, very little extra code would be required to invoke the binary from within iHMMuneAlign, and parse the XML output. However, doing so incurs a (potentially significant) performance penalty at run time due to the cost of
-
-\begin{description}
-	\item[Process Creation]
-	The operating system has to create a new process for the blast executable, perform all its bookkeeping operations, and clean up after it is completed.
-	\item[Reading Input Files]
-	The executable would then have to read the database files from disk again, instead of using the copy that already in memory (residing in iHMMuneAlign's address space).
-	\item[Serialising Results]
-	BLAST, like most high performance programs, uses its own internal intermediate representation for the input and germline genes\autocite{blast}. Once the alignment search is completed, it will then need to convert that data into a human readable, or standardised format that can be parsed by iHMMuneAlign.
-	\item[Transferring Results]
-    Modern operating systems provide a certain level of isolation, such that a process can not directly access data in a section of memory belonging to another process \autocite{address-spaces}. As a result, the previous implementation required the BLAST executable to write its results to disk so it could be read.
-    
-    While IO operations are generally expensive, ones involving disk access tend to be especially so. This is due to the fact that disks are several orders of magnitude slower than main memory (RAM). 
-	
-\end{description}
-
-\subsubsection{Linking Shared Library}
-BLAST+ can be 
 
 \subsection{Parsing Blast Results}
 \subsection{Calculating A-Score}
