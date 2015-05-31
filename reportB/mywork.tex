@@ -3,12 +3,13 @@
 \section{Initialization}
 Since iHMMuneAlign is rather configurable, it requires a large amount of input data for each run that cannot be embedded in the code directly. This data has to be read during program initialisation and stored in memory such that it can be efficiently used in their required of the algorithm.
 
-\subsection{D/J Repertoires}
+\subsection{IGHD/IGHJ Repertoires}
 The use-case for the germline IGHD and IGHJ repertoires are farily straight forward. For each nucleotide in each gene, a state needs to be created that represents the probability that gene caused it to be there.
 
 Since this needs to be done for each gene/nucleotide in order, there's no need for random access, or efficient searching. They're stored in a contiguous block of memory in a dynamic (variable size) array. This provides good cache/memory locality \autocite{cache-locality}, while being easy to use.
 
-\subsection{V Repertoire}
+\subsection{IGHV Repertoire}
+\label{sec:v-repertoire}
 Unlike the other two genes, not every IGHV gene needs to be in the model. Instead, a BLAST search is performed, and (for now, at least) only the most likely hit --the closest germline IGHV gene-- is used.
 
 However, the BLAST results do not in fact give the sequence in its output; It only presents the relevant matching/aligned section of the sequence. Fortunately, it also gives the (unique) name of the gene, as specified in the repertoire file it was given.
@@ -39,6 +40,8 @@ A(A->T)C 	0.086419753
     \theverbbox
     \caption{An extract of a mutation probabilities file}
 \end{figure}
+
+The probabilities are parsed into double-precision floating point numbers; the string on the left is split up, with all the unnecessary characters (arrow and brackets) dropped. Doing so allowed for more efficient hashing when put into a hash-table in memory, effectively forming an index much like the \nameref{sec:v-repertoire}.
 
 \section{BLAST}
 The first step is to determine the most likely germline V gene is in the target sequence. Fortunately, this can be determined quite efficiently by aligning the input sequence with all known V genes \cite{iHMMuneAlign}. For that we opted to use the excellent alignment tool by NCBI: BLAST \cite{blast}, like the original implementation.
