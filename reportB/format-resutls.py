@@ -27,6 +27,7 @@ output = r"""
             upper whisker={},
         }},
     ]
+    coordinates{{}};
 """.format(
         min(vals),
         statistics.median(vals),

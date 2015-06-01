@@ -240,6 +240,7 @@ After the failures of the other approaches, the possibility of implementing the 
 Later on in the project, specifically when the model generation code is implemented, its performance can be evaluated more accurately. The final decision regarding its use will be made at the time, depending on the performance of the alternatives.
 
 \section{Concurrency}
+\label{sec:concurrency}
 Since the advent of multi-core and multi-processor machines, concurrency has become essential for high performance applications \autocite{freelunch}. Since clock speeds have stagnated, yet the parallelism available in modern hardware continues to rise designing our implementation to be concurrent from the start will ensure that it can take advantage of the speed improvements granted by future generations processors.
 
 The nature of our problem presents us two obvious ways of splitting it up to distribute over multiple threads of execution.
