@@ -1,0 +1,100 @@
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.484s
+user	3m47.183s
+sys	0m1.260s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m29.556s
+user	3m55.123s
+sys	0m1.073s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.481s
+user	3m47.897s
+sys	0m1.100s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.043s
+user	3m46.573s
+sys	0m0.810s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.552s
+user	3m50.147s
+sys	0m1.040s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.507s
+user	3m50.877s
+sys	0m1.110s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m27.169s
+user	3m54.433s
+sys	0m0.910s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m27.226s
+user	3m57.243s
+sys	0m1.007s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.774s
+user	3m48.517s
+sys	0m1.023s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m27.921s
+user	3m51.740s
+sys	0m0.687s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m25.993s
+user	3m45.687s
+sys	0m1.010s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.518s
+user	3m49.983s
+sys	0m1.100s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.427s
+user	3m46.707s
+sys	0m1.183s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.857s
+user	3m54.740s
+sys	0m0.947s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m27.594s
+user	3m56.847s
+sys	0m0.967s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.134s
+user	3m45.807s
+sys	0m1.093s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m27.808s
+user	3m50.377s
+sys	0m1.083s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m27.147s
+user	3m49.450s
+sys	0m1.067s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m26.367s
+user	3m47.597s
+sys	0m0.970s
+Picked up _JAVA_OPTIONS: -Dawt.useSystemAAFontSettings=on
+
+real	1m27.013s
+user	3m54.080s
+sys	0m0.943s
