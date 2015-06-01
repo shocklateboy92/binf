@@ -132,6 +132,15 @@ The entire process of creating a HMM to represent \igh recombination and solving
 
 \subsection{Parsing Blast Results}
 The \code{blastn} executable is invoked, the IGHV gene is pre-aligned, and its output (all the hits) are presented to iHMMuneAlign. 
+
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true}
+\begin{figure}
+	\label{fig:blast-output}
+	\caption{An extract from a BLAST+ output file}
+	\lstinputlisting[language=XML]{blastOutput-min.xml}
+	\small Note that most lines have been removed, to highlight the important parts of the file. Sections that have been removed are marked with ellipses.
+\end{figure}
+
 \subsection{Calculating A-Score}
 \subsection{Generating Model}
 \subsubsection{Generating V/D/J States}

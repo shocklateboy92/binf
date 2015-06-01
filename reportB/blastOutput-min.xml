@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE BlastOutput PUBLIC "-//NCBI//NCBI BlastOutput/EN" "http://www.ncbi.nlm.nih.gov/dtd/NCBI_BlastOutput.dtd">
+<BlastOutput>
+	...
+  <BlastOutput_iterations>
+    <Iteration>
+      <Iteration_iter-num>1</Iteration_iter-num>
+      <Iteration_query-ID>lcl|1_0</Iteration_query-ID>
+      <Iteration_query-def>AJ512650.1| Homo sapiens partial mRNA for immunoglobulin heavy chain variable region (IGHV gene), clone 43</Iteration_query-def>
+      <Iteration_query-len>351</Iteration_query-len>
+      <Iteration_hits>
+        <Hit>
+          <Hit_num>1</Hit_num>
+          <Hit_id>lcl|IGHV3-9*01(L1)</Hit_id>
+          <Hit_def>No definition line found</Hit_def>
+          <Hit_accession>IGHV3-9*01(L1)</Hit_accession>
+          <Hit_len>298</Hit_len>
+          <Hit_hsps>
+            <Hsp>
+              <Hsp_num>1</Hsp_num>
+              <Hsp_bit-score>452.567</Hsp_bit-score>
+              <Hsp_score>460</Hsp_score>
+              <Hsp_evalue>1.75847e-129</Hsp_evalue>
+              <Hsp_query-from>4</Hsp_query-from>
+              <Hsp_query-to>286</Hsp_query-to>
+              <Hsp_hit-from>16</Hsp_hit-from>
+              <Hsp_hit-to>298</Hsp_hit-to>
+              <Hsp_query-frame>1</Hsp_query-frame>
+              <Hsp_hit-frame>1</Hsp_hit-frame>
+              <Hsp_identity>268</Hsp_identity>
+              <Hsp_positive>268</Hsp_positive>
+              <Hsp_align-len>283</Hsp_align-len>
+              <Hsp_qseq>GAGTCGGGGGGAGGCTGGGTACAGCCTGGCAGGTCCCTGA...</Hsp_qseq>
+              <Hsp_hseq>GAGTCTGGGGGAGGCTTGGTACAGCCTGGCAGGTCCCTGA...A</Hsp_hseq>
+            </Hsp>
+          </Hit_hsps>
+        </Hit>
+      </Iteration_hits>
+  </BlastOutput_iterations>
+  ...
+</BlastOutput>
