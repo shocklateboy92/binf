@@ -33,8 +33,11 @@
 \usepackage{pgfplots}
 \pgfplotsset{width=12cm,compat=1.9}
 
-%\usepgfplotslibrary{external}
-%\tikzexternalize
+\usepackage{tikz}
+\usetikzlibrary{pgfplots.statistics}
+
+\usetikzlibrary{shapes,arrows}
+\usepackage{dot2texi}
 
 \usepackage[backend=biber]{biblatex}
 \addbibresource{pubs.bib}
@@ -43,10 +46,6 @@
 
 \usepackage{hyperref}
 \usepackage{bookmark}
-
-\usepackage{tikz}
-\usetikzlibrary{shapes,arrows}
-\usepackage{dot2texi}
 
 \usepackage{verbatim}
 \usepackage{verbatimbox}

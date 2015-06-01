@@ -13,7 +13,41 @@ Should I emphasise that this is a work in progress?
 \section{Performance}
 One of the key goals of this project was to improve the performance of iHMMuneAlign. While there are many different aspects when it comes to the performance of computer programs, in this case we care about run-time specifically. 
 
-The new implementation of iHMMuneAlign was designed from scratch with performance in mind, dictating choice of language, frameworks/libraries, as well as various architectural decisions. As such, even with 
+To compare the total run-time, both implementations were given 300 gene sequences and the total time taken (Wall-clock time) to process all of them was measured. 
+
+\begin{figure}
+\begin{tikzpicture}
+\begin{axis}[
+	boxplot/draw direction=y,
+	xticklabels={Old, New}
+]
+	\addplot+[
+		boxplot prepared={
+			lower whisker=5,
+			lower quartile=7,
+			median=8.5,
+			upper quartile=9.5,
+			upper whisker=10,
+		},
+	]
+	coordinates{};
+	
+	\addplot+[
+		boxplot prepared={
+			lower whisker=5,
+			lower quartile=7,
+			median=8.5,
+			upper quartile=9.5,
+			upper whisker=10,
+		},
+	]
+	coordinates{};
+\end{axis}
+\end{tikzpicture}	
+\end{figure}
+
+
+The new implementation of iHMMuneAlign was designed from scratch with performance in mind, dictating choice of language, frameworks/libraries, as well as various architectural decisions. 
 
 \section{Maintenance}
 Will describe how the new version will be easier to maintain.
