@@ -10,6 +10,29 @@ Will describe the features that the new version supports already, will support i
 
 Should I emphasise that this is a work in progress?
 
+% doesn't support N-states, but has extra D states to compensate.
+% aborts on gaps - has same penalty for detection
+
+\begin{wrapfigure}[26]{l}{0.4\textwidth}
+	\begin{tikzpicture}
+	\begin{axis}[
+	boxplot/draw direction=y,
+	xtick={1,2},
+	xticklabels={Old, New},
+	width=0.4\textwidth,
+	height=\textheight,
+	cycle list name=color list,
+	ylabel=Time Taken (in Seconds)
+	]
+	
+	\input{eval-runtime-both}	
+	
+	\end{axis}
+	\end{tikzpicture}
+	\caption{Total (Wall-clock) time taken to process 300 sequences}
+	\label{fig:eval-boxplots}
+\end{wrapfigure}
+
 \section{Performance}
 
 \subsection{Runtime}
@@ -17,44 +40,44 @@ While there are many different aspects when it comes to the performance of compu
 
 This is actually quite straightforward to compare; both implementations were given the same workload, and had their total execution times measured. The inputs sequences were carefully chosen to ensure they only required features that are currently supported by both of them.
 
-\begin{figure}
-	\begin{subfigure}[b]{0.5\textwidth}		
-		\begin{tikzpicture}
-		\begin{axis}[
-		boxplot/draw direction=y,
-		xticklabels={Old, New},
-		width=\textwidth,
-		cycle list name=color list
-		]
-		\input{eval-runtime-old}
-
-		\end{axis}
-		\end{tikzpicture}
-		\caption{Old Implementation}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.5\textwidth}		
-		\begin{tikzpicture}
-		\begin{axis}[
-		boxplot/draw direction=y,
-		xticklabels={Old, New},
-		width=\textwidth
-		]
-		\input{eval-runtime-new}
-		
-		\end{axis}
-		\end{tikzpicture}
-		\caption{New Implementation}
-	\end{subfigure}
-	\caption{Total (Wall-clock) time taken to process 300 sequences}
-	\label{fig:eval-boxplots}
-\end{figure}
-
 \subsection{Parallelism}
 As described in detail in \secref{sec:concurrency}, parallelism is essential for modern high performance applications. While computers are increasing in total computational power these days faster than ever before, performance for single threaded applications have effectively stagnated, by virtue of clock speeds stagnating. 
 
-It is clear from the analysis performed in \secref{arg1}
+It is clear from the analysis performed in \secref{sec:threadprof}, that the previous implementation has a very low degree of parallelism. In fact, it would cease to gain any benefit from a machine that has more than two cores, which nearly all modern machines do. 
+
+\autoref{fig:i2-time} shows that there 
+
+%TODO: make line graph with num_threads in X axis
+%      this can be done by tbb::thread_scheduler_init(num_threads)
 
 The new implementation of iHMMuneAlign was designed from scratch with performance in mind, dictating choice of language, frameworks/libraries, as well as various architectural decisions. 
 
+\leavevmode
 \section{Maintenance}
-Will describe how the new version will be easier to maintain.
+The second goal of this project is to make the code for iHMMuneAlign much more maintainable, allowing others to add new features as well as perform further optimisations.
+
+
+\subsection{Revision Control}
+The previous codebase had been maintained since its inception in 2007 until present day by various people. Many features have clearly been added and removed since then, resulting in large chunks of dead (unused) or commented out code.
+
+If this project were under revision control, it could have for code to have been deleted instead of being commented out (they can still be viewed later using revision history). Furthermore, it would have also allowed new features and experiments to have been constructed in branches; only entering the main branch when they were deemed suitable.
+
+The new implementation of iHMMuneAlign has used the Git revision control system since its creation, all the progress that lead to the feature-set and code structure it has today is recorded in its history. As a result, it could avoid several issues, going forward, that plague the previous codebase.
+
+\leavevmode
+\subsection{Separation of Logic}
+One of the largest barriers to understanding the source code of the previous implementation is its lack of clear structure. Several key parts of the logic behind model generation are distributed throughout the code, making components dependent on each other in subtle ways. 
+
+This is not only makes the code much harder to follow, but also virtually impossible to modify without introducing subtle bugs; increasing the workload as the developer must watch for this.
+
+The structure of the new implementation is laid out in detail in \secref{sec:pipeline}; with a dedicated section in the code for each stage in the pipeline, plus an initialisation section. This lack of inter-dependence (loose coupling) not only resulted in ease of optimisation (especially with regards to parallelism), but ease of understanding -- a developer only needs to keep the details of that stage in mind.
+	
+\subsection{Unit Tests}
+The previous implementation did not contain any form of automated testing -- there were some debugging code, but it still required some sort of manual inspection.
+
+Another consequence of the code being highly interdependent is that it is exceptionally difficult to test an individual component. If unit tests had been written from that start, it would have forced the original developers to structure the code such that components can be tested individually.
+
+The new implementation has a series of unit tests, that were written along with the features they test. This will ensure that as developers add new features, or perform new optimisations, any changes in behaviour introduced will cause tests to fail. Not only will this encourage developers to make new improvements by reducing the risk of breaking features, but it will mean they waste less time tracking down bugs.
+
+
+While there are several widely accepted techniques for writing maintainable code --which I've followed--, there is no real way of measuring code quality quantitatively; in reality only time will tell.
