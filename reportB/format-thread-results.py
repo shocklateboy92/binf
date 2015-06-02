@@ -20,7 +20,7 @@ for f in sys.argv[1:]:
 
     means.append((fnum, statistics.mean(vals)))
 
-print(r"\addplot +[mark=none] coordinates {{{}}};".format(" ".join([str(v) for v in means])))
+print(r"\addplot +[] coordinates {{{}}};".format(" ".join([str(v) for v in means])))
 
 #assert means[0][0] == 1
 #

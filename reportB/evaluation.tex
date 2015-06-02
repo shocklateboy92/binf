@@ -13,7 +13,7 @@ Should I emphasise that this is a work in progress?
 % doesn't support N-states, but has extra D states to compensate.
 % aborts on gaps - has same penalty for detection
 
-\begin{wrapfigure}[26]{l}{0.4\textwidth}
+\begin{wrapfigure}[25]{l}{0.4\textwidth}
 	\begin{tikzpicture}
 	\begin{axis}[
 	boxplot/draw direction=y,
@@ -36,13 +36,17 @@ Should I emphasise that this is a work in progress?
 
 \section{Performance}
 
+The new implementation of iHMMuneAlign was designed from scratch with performance in mind, dictating choice of language, frameworks/libraries, as well as various architectural decisions. 
+
+Note that all the benchmarks and analysis detailed in this section were performed on a machine with an Intel\textsuperscript{\textregistered} Xeon\textsuperscript{\textregistered} CPU E5-1650 v3 @ 3.50GHz, 32GiB RAM and a Samsung\textsuperscript{\textregistered} 840 Pro SSD. The CPU contains 6 physical cores, and uses Intel\textsuperscript{\textregistered} Hyper-Threading technology to provide 12 logical cores.
+
 \subsection{Runtime}
 While there are many different aspects when it comes to the performance of computer programs, in this case we care about run-time specifically. 
 
-This is actually quite straightforward to compare; both implementations were given the same workload, and had their total execution times measured. The inputs sequences were carefully chosen to ensure they only required features that are currently supported by both of them.
+Fortunately, this can be measured quantitatively and compared easily using benchmarks. For this, 300 gene sequences were chosen that only required features supported by both implementations. I 
 
 \subsection{Parallelism}
-As described in detail in \secref{sec:concurrency}, parallelism is essential for modern high performance applications. While computers are increasing in total computational power these days faster than ever before, performance for single threaded applications have effectively stagnated, by virtue of clock speeds stagnating. 
+As described in detail in \secref{sec:concurrency}, parallelism is essential for modern high performance applications. While total computational power in modern machines are increasing faster than ever, single threaded performance has stagnated. Clock speeds are no longer increasing significantly; all that extra power comes in new cores, which require increasing parallelism to leverage. 
 
 It is clear from the analysis performed in \secref{sec:threadprof}, that the previous implementation has a very low degree of parallelism. In fact, it would cease to gain any benefit from a machine that has more than two cores, which nearly all modern machines do. 
 
@@ -52,20 +56,19 @@ It is clear from the analysis performed in \secref{sec:threadprof}, that the pre
 	\centering
 	\begin{tikzpicture}
 	\begin{axis}[
-	axis lines = left,
-	xlabel = Threads,
-	ylabel = Time (Seconds),
-	cycle list name=color list
+		axis lines = left,
+		xlabel = Threads,
+		ylabel = Time (Seconds),
+		xmin = 0,
+		ymin = 0
 	]
 	
 	\input{eval-threads}
 	\end{axis}
 	\end{tikzpicture}
-	\caption{\ldots}
+	\caption{Total (Wall-clock) time taken to process 300 sequences, using a variable number of threads}
 	\label{fig:i2-time}
 \end{figure}
-
-The new implementation of iHMMuneAlign was designed from scratch with performance in mind, dictating choice of language, frameworks/libraries, as well as various architectural decisions. 
 
 \leavevmode
 \section{Maintenance}
