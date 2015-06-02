@@ -13,7 +13,7 @@ Should I emphasise that this is a work in progress?
 % doesn't support N-states, but has extra D states to compensate.
 % aborts on gaps - has same penalty for detection
 
-\begin{wrapfigure}[25]{l}{0.4\textwidth}
+\begin{wrapfigure}[24]{l}{0.4\textwidth}
 	\begin{tikzpicture}
 	\begin{axis}[
 	boxplot/draw direction=y,
@@ -43,14 +43,37 @@ Note that all the benchmarks and analysis detailed in this section were performe
 \subsection{Runtime}
 While there are many different aspects when it comes to the performance of computer programs, in this case we care about run-time specifically. 
 
-Fortunately, this can be measured quantitatively and compared easily using benchmarks. For this, 300 gene sequences were chosen that only required features supported by both implementations. I 
+\subsubsection{Method Details}
+
+The benchmark to measure and compare the total run-times was fairly straightforward.
+
+\paragraph{Input Data} \hfill \\
+was chosen meticulously, to ensure processing each sequence would only require features supported by both implementations. To reach a sufficient workload, duplicating sequences were required; while not ideal, it should suffice for our experiments.
+
+\paragraph{Execution Environment} \hfill \\
+was the machine (hardware detailed above) running Arch Linux (Kernel 4.0.4). Furthermore, the benchmarks were run within runlevel 3 \autocite{runlevels}; a lower level environment used during machine initialisation. As such, there were no other non-essential tasks being performed on the system and should minimise interference.
+
+\paragraph{Measurement} \hfill \\
+of results was performed using the shell's inbuilt \code{time} utility. This uses the various operating system features to determine the following:
+\begin{description}
+	\item[Real time] The total (Wall-clock) time from program invocation to termination.
+	\item[CPU time] Sum of the amount of time spent actually working on behalf of the program by each CPU
+	\item[System time] The amount of time spent by the kernel working on behalf of said program
+\end{description}
+
+\paragraph{Sample Size} \hfill \\
+A sufficiently hight sample size is required to show that the recorded data are statistically significant i.e. not by random chance. However, since a large number of tests are performed in these benchmarks, there is a trade-off between statistical precision and completing in a reasonable time.
+Ultimately, a value of 20 were most suitable -- each program was invoked 20 times per configuration.
+
+\subsubsection{Results}
+\lipsum[1]
 
 \subsection{Parallelism}
 As described in detail in \secref{sec:concurrency}, parallelism is essential for modern high performance applications. While total computational power in modern machines are increasing faster than ever, single threaded performance has stagnated. Clock speeds are no longer increasing significantly; all that extra power comes in new cores, which require increasing parallelism to leverage. 
 
 It is clear from the analysis performed in \secref{sec:threadprof}, that the previous implementation has a very low degree of parallelism. In fact, it would cease to gain any benefit from a machine that has more than two cores, which nearly all modern machines do. 
 
-\autoref{fig:i2-time} shows that there 
+\autoref{fig:i2-time} shows that there \lipsum[1]
 
 \begin{figure}
 	\centering
