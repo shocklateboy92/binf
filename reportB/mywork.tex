@@ -172,14 +172,19 @@ While this step doesn't involve much in terms of computational power, it is nece
 
 \subsection{Generating Model}
 \label{sec:pipeline-stage_3}
-% won't go deep - explained in detail in paper
-% represented as indexes, rather than objects
-% 	cheaper to create
-%	can refer to states that haven't been created yet (transitions)
-\subsubsection{Generating V/D/J States}
-\subsubsection{Generating Transitions}
+Most of logic and reasoning involved in this stage has already been described in detail by Ga\"{e}ta et al\autocite{iHMMuneAlign}. However, the notable decision was to use a series of simple data structures in an array to represent the states and refer to them by index. This provides us two key benefits:
+\begin{itemize}
+    \item Objects are expensive to create: various VM set up has to be done in Java; memory has to be allocated in C++. By using an already allocated array, all this overhead is avoided.
+    \item By referring to states using their indexes, its possible to refer (and create a transition) to a state that hasn't been created yet. This enables the creation of states, setting their emission and transition probabilities in a single pass. This is not only more performance efficient, but it allows for clearer code, by keeping all the logic related to a state in one place.
+\end{itemize}
+
 \subsection{Running Viterbi}
 \label{sec:pipeline-stage_4}
+The Viterbi algorithm has already been described to great detail in \secref{sec:viterbi}. 
+
+This stage is the most parallelisable of the entire pipeline. Should iHMMuneAlign be parallelised further, for instance, to run on an FPGA or GPU; this is the ideal candidate. 
+
+At this point in time however, iHMMuneAlign uses its own custom implementation of the Viterbi algorithm, as all available libraries were deemed unsuitable. 
 
 \subsection{Printing Results}
 \label{sec:pipeline-stage_5}

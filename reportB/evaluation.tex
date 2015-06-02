@@ -78,7 +78,7 @@ Ultimately, a value of 20 were most suitable -- each program was invoked 20 time
 
 \subsubsection{Interpretation of Results}
 The total execution times for both implementations can be seen on \autoref{fig:eval-boxplots}. Since the previous implementation will only use 2 threads, it was run with 2 threads. 
-The new implementation however, will create and use as many threads as there are available CPU cores on the target machine (12 in this case).
+The new implementation however, will create and use as many threads as there are available CPU cores on the target machine (12 in this case) Nonetheless, for benchmarking reasons, it is possible to artificially reduce the number of threads created/used by the new implementation.
 
 Also note that the graph is a box plot for all 3 measurements, rather than just the first two. However, in the case of the third measurement (new implementation without any artificial constraints) this is difficult to see, as the variance is so low relative to the difference in execution time between it and old implementation.
 
@@ -88,29 +88,32 @@ This can be seen by comparing the CPU times between executions, as presented in 
 
 \subsection{Parallelism}
 \label{sec:eval-parallelism}
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+    \begin{axis}[
+    axis lines = left,
+    xlabel = Threads,
+    ylabel = Time (Seconds),
+    xmin = 0,
+    ymin = 10
+    ]
+    
+    \input{eval-threads}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Total (Wall-clock) time taken to process 300 sequences, using a variable number of threads}
+    \label{fig:i2-time}
+\end{figure}
+
 As described in detail in \secref{sec:concurrency}, parallelism is essential for modern high performance applications. While total computational power in modern machines are increasing faster than ever, single threaded performance has stagnated. Clock speeds are no longer increasing significantly; all that extra power comes in new cores, which require increasing parallelism to leverage. 
 
 It is clear from the analysis performed in \secref{sec:threadprof}, that the previous implementation has a very low degree of parallelism. In fact, it would cease to gain any benefit from a machine that has more than two cores, which nearly all modern machines do. 
 
-\autoref{fig:i2-time} shows that there \lipsum[1]
+However, it can be seen from \autoref{fig:new-user-time} that the new implementation is very different. In these runs the wall-clock time is only ?, but the CPU time is ?. That's almost a 12 fold increase, indicating that all 12 logical CPUs were being utilised. 
 
-\begin{figure}
-	\centering
-	\begin{tikzpicture}
-	\begin{axis}[
-		axis lines = left,
-		xlabel = Threads,
-		ylabel = Time (Seconds),
-		xmin = 0,
-		ymin = 10
-	]
-	
-	\input{eval-threads}
-	\end{axis}
-	\end{tikzpicture}
-	\caption{Total (Wall-clock) time taken to process 300 sequences, using a variable number of threads}
-	\label{fig:i2-time}
-\end{figure}
+\autoref{fig:i2-time} shows the total execution time decreasing for the new iHMMuneAlign as it is allowed to use more threads. However, this means that there is now a thing 
+
 
 \leavevmode
 \section{Maintenance}
