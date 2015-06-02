@@ -1,6 +1,7 @@
 # Old parts - don't want to worry now
 seminar/*
 reportA/*
+stochhmm/*
 
 # Qt Creator
 *.user
