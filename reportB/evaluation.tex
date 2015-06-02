@@ -20,6 +20,8 @@ Modelling these require having extra states in the model, which will make a sign
 
 Due to the limitations listed above, the output of iHMMuneAlign no longer matches exactly with the previous implementation. However, the overall improvement of iHMMuneAlign is an ongoing process and all important features will be added back in.
 
+%TODO: mention lack of kappa/lambda chain
+
 \vfil
 \pagebreak
 \section{Performance}
@@ -85,6 +87,7 @@ It is readily apparent from the graph that the new implementation is approximate
 This can be seen by comparing the CPU times between executions, as presented in \autoref{fig:eval-user-time}. The mean CPU time for the new implementation (restricted to two threads) was 62.24 seconds, while the old one used 230.55 seconds. In simple terms, this means that the old implementation must to roughly 4 times the work to end up with the same results. This can be attributed to various factors including the overhead of Java, as well as the (non performance oriented) structure of the old program. 
 
 \subsection{Parallelism}
+\label{sec:eval-parallelism}
 As described in detail in \secref{sec:concurrency}, parallelism is essential for modern high performance applications. While total computational power in modern machines are increasing faster than ever, single threaded performance has stagnated. Clock speeds are no longer increasing significantly; all that extra power comes in new cores, which require increasing parallelism to leverage. 
 
 It is clear from the analysis performed in \secref{sec:threadprof}, that the previous implementation has a very low degree of parallelism. In fact, it would cease to gain any benefit from a machine that has more than two cores, which nearly all modern machines do. 

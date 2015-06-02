@@ -1,11 +1,26 @@
 \chapter{Conclusion}\label{ch:conclusion}
 
-A thesis requirements/template document has been created.  This serves the
-dual purposes of giving students specific requirements to their theses ---
-both style and content related --- while providing a typical thesis
-structure in a \LaTeX\ template.
+The original implementation of iHMMuneAlign has undergone a vast series of changes since its inception, leaving it in a state of disarray. That, combined with the results of various previous attempts to improve its performance, let to the conclusion that it should be retired. 
+
+Thereupon a new implementation was proposed, and built. This new iHMMuneAlign is not only performance more efficient by a factor of 4; it is highly parallel, allowing it to fully utilise modern processors, as well as new ones for the foreseeable future.
+
+Apart from being much more preformant than the previous codebase, this one should be much easier to maintain; less likely it would need to be overhauled again.
 
 \section{Future Work}
 
-Extract the requirements from the template in order to have very concise
-requirements.
+However, there still remains a few tasks to be done before the new implementation is ready to fully replace its predecessor:
+
+\begin{description}
+    \item[Remaining States] \hfill \\
+    Currently, the states to model N and P addition are not generated with the rest of the model. In order to reach the same level of accuracy, these need to be added.
+    \item[Verify Probabilities] \hfill \\
+    Since there are states missing, with extra (incorrect) ones added to represent the workload, the final probabilities outputted by the program are incorrect.
+    As a result, it is currently not easy to verify the correctness of the program, and there could be other subtle bugs in there. Once the states are added, these bugs will need to be found and fixed.
+    \item[Parallelism Overhead] \hfill \\
+    \secref{sec:eval-parallelism} demonstrated that even though iHMMuneAlign now utilises all cores of a modern CPU, it has a high parallelism overhead; bounding the potential speedup.     
+    This can most likely be optimised further, leading to an increased upper bound on speedup. Either way, it should definitely be investigated.
+    \item[Support Gaps] \hfill \\
+    Currently iHMMuneAlign will abort execution if it encounters a pre-aligned sequence with gaps in it. In order to reach feature parity with the old version, it should handle these correctly.
+    \item[Support Other Gene Types] \hfill \\
+    The previous implementation could align not just heavy (IGH) chain, but also the $\lambda$ and $\kappa$ chains. In order to reach feature parity, these need to also be ported to the new, efficient implementation.
+\end{description}
