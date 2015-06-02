@@ -114,7 +114,7 @@ With a batch size of 1, the expected linear increase was present. However, incre
 This suggests that the existing implementation is concurrent, and will utilize all the available processing power on the CPU. However, that should have diminishing returns once the amount of threads exceeds the total number of CPU cores on the machine, which is not the case here - execution time continues to decrease at roughly the same pace as $n$ increases.
 
 Looking at the total CPU time spent on the process, rather than total execution time provided a theory (which was later confirmed in Section \ref{sec:threadprof}, on page \pageref{sec:threadprof}) to explain this behaviour.
-For each invocation of the Java program, there is a significant amount of overhead. For example, the Java Virtual Machine (JVM) needs to be initialized, it needs to load the program, analyse and perform any JIT compilation (Just-in-Time compilation, to improve execution time \autocite{jit}). The program also needs to read in the repertoire data files for each gene and process them. On top of all that, any data that are being cached by the operating system on behalf of the program will be invalidated. Since this only needs to be done once per batch, as the batch sizes increases (and the number of batches decrease), this overhead also decreases.
+For each invocation of the Java program, there is a significant amount of overhead. For example, the Java Virtual Machine (JVM) needs to be initialised, it needs to load the program, analyse and perform any JIT compilation (Just-in-Time compilation, to improve execution time \autocite{jit}). The program also needs to read in the repertoire data files for each gene and process them. On top of all that, any data that are being cached by the operating system on behalf of the program will be invalidated. Since this only needs to be done once per batch, as the batch sizes increases (and the number of batches decrease), this overhead also decreases.
 
 This is clearly apparent in \autoref{fig:usertime}, which shows that the total work done by the program to process all the sequences is reduced significantly as the $n$ increases.
 
@@ -166,6 +166,7 @@ No further investigation was done to determine what would need to be done in ord
 \chapter{Proposed Solution}
 
 \section{Re-implementing From Scratch}
+\label{sec:reimplementing}
 
 Based on the above analysis, it is clear that the original codebase has many pitfalls, and limitations that make it difficult to proceed further.
 
@@ -179,22 +180,22 @@ There are no unit tests that cover most of the program logic, and it would be di
 
 The original authors are no longer available to provide assistance for understanding their codebase, and the style guide they followed (or lack thereof) makes it difficult to read and follow.
 
-It is understandable that the original authors did not prioritize long term code maintainability, as they could have been rushed for time, or they may have deemed it unlikely their could would be used and maintained 7 years later.
+It is understandable that the original authors did not prioritise long term code maintainability, as they could have been rushed for time, or they may have deemed it unlikely their could would be used and maintained 7 years later.
 
 \subsection{Concurrency / Thread Safety}
 
 Concurrency must be considered from the very early design decisions onwards, for a program to be efficient and parallel. The fact the original authors abandoned their efforts for parallelism indicates that there may have been concurrency bugs, like race conditions \autocite{raceconditions} that are very difficult to trace.
 
-Access to shared data must be carefully controlled, and synchronized to avoid data corruption (and race conditions). The potentially high overhead of synchronization should lead to program structure designs where shared data between threads is minimal. In addition, the thread safety of any libraries used must be carefully considered - if a class is not thread safe, it shouldn't be shared  between threads; and if a class is not re-entrant, there shouldn't even be separate instances in different threads.
+Access to shared data must be carefully controlled, and synchronised to avoid data corruption (and race conditions). The potentially high overhead of synchronisation should lead to program structure designs where shared data between threads is minimal. In addition, the thread safety of any libraries used must be carefully considered - if a class is not thread safe, it shouldn't be shared  between threads; and if a class is not re-entrant, there shouldn't even be separate instances in different threads.
 
 \subsection{Libraries and Language}
 \label{sec:libs}
 Some of the libraries that the original authors used have since been deprecated. The specific libraries are mentioned in more detail below. Considering that some libraries account for most of the performance inefficiencies of the program (as shown in Section \ref{sec:cpuprof}), they will certainly need to be replaced. Since the libraries' APIs heavily influenced the structure of the code, replacing them while maintaining the existing code structure will be a difficult task.
 
-There is also the language itself to consider: Java programs tend to be 2-3 times slower than their equivalent C++ counterparts, and even more so in CPU bound tasks like this \autocite{qtvjava}. Reimplementing from scratch will allow us to do so in a different language. C++ is a good candidate - it is quite popular for constructing large scale, high performance applications \autocite{cpp}; it contains high concepts from high level languages, while still allowing for low level optimizations, including memory management.
+There is also the language itself to consider: Java programs tend to be 2-3 times slower than their equivalent C++ counterparts, and even more so in CPU bound tasks like this \autocite{qtvjava}. Reimplementing from scratch will allow us to do so in a different language. C++ is a good candidate - it is quite popular for constructing large scale, high performance applications \autocite{cpp}; it contains high concepts from high level languages, while still allowing for low level optimisations, including memory management.
 
 \subsection{Implementation Stages}
-The initial version of the new implementation will be loosely based off the already existing implementation. Once the code is rewritten and structured in a manner that lends itself to easy modification, the real optimization (such as threading, and caching computation) can begin.
+The initial version of the new implementation will be loosely based off the already existing implementation. Once the code is rewritten and structured in a manner that lends itself to easy modification, the real optimisation (such as threading, and caching computation) can begin.
 
 %TODO: add BLAST to dependencies
 \section{Dependencies of iHMMuneAlign}
@@ -250,18 +251,18 @@ The nature of our problem presents us two obvious ways of splitting it up to dis
 
  Creating a thread requires at least one system call (which is very expensive \autocite{syscalls}) and destroying requires another. Additionally, the operating system has to do more book-keeping, as well as preparing a bunch of extra resources for the thread, which then have to be cleaned up - causing a significant performance cost \autocite{threads}.
 
- A much better performing design would be to create a pool of worker threads at the start, and a queue of sequences for them to process. Each thread will then pop the sequence at the top of the queue, process it, write out the result, pop the sequence that is now at the head of the queue and repeat. In this case, the primary limitation for parallelism would come from the queue itself - by virtue of being a shared data structure, it would require synchronization to maintain consistency \autocite{concurrency}.
+ A much better performing design would be to create a pool of worker threads at the start, and a queue of sequences for them to process. Each thread will then pop the sequence at the top of the queue, process it, write out the result, pop the sequence that is now at the head of the queue and repeat. In this case, the primary limitation for parallelism would come from the queue itself - by virtue of being a shared data structure, it would require synchronisation to maintain consistency \autocite{concurrency}.
 
- If the synchronization overhead of the queue is found to be a significant limitation on parallelism, it can be skipped altogether. Since all the inputs sequences are passed to the program in a file, the file itself can be partitioned - then each thread would read, parse and process all the sequences within a partition.
+ If the synchronisation overhead of the queue is found to be a significant limitation on parallelism, it can be skipped altogether. Since all the inputs sequences are passed to the program in a file, the file itself can be partitioned - then each thread would read, parse and process all the sequences within a partition.
 
- Doing so has the advantage that it will reduce the synchronization necessary between threads. On the other hand, if the sequences in some partitions require significantly less work than others, some threads would finish much quicker than others and be idling instead of doing useful work. This can be mitigated somewhat, by using a technique called work stealing \autocite{workstealing}, where threads that have finished all their jobs take pending jobs from other threads.
+ Doing so has the advantage that it will reduce the synchronisation necessary between threads. On the other hand, if the sequences in some partitions require significantly less work than others, some threads would finish much quicker than others and be idling instead of doing useful work. This can be mitigated somewhat, by using a technique called work stealing \autocite{workstealing}, where threads that have finished all their jobs take pending jobs from other threads.
 
 \subsection{Per Processing Stage}
 
-The other way, is to consider each sequence as a series of tasks, and perform each one in a different thread. It's infeasible to speed up the processing of an individual sequence using this method, as most (if not all) of these tasks would depend on the results of the previous, and initializing a thread could take longer than some of the tasks.
+The other way, is to consider each sequence as a series of tasks, and perform each one in a different thread. It's infeasible to speed up the processing of an individual sequence using this method, as most (if not all) of these tasks would depend on the results of the previous, and initialising a thread could take longer than some of the tasks.
 
 Considering that the goal of the project is to scale well with increasing numbers of sequences, the following approach makes more sense; tasks can be done in batches. I.e. have $n$ threads process the first stage of $n\times k$ sequences (where $k$ is an integer constant), and then have all $n$ threads process the second stage and so on. This has the primary advantage of having much greater data locality (decreasing the working set, page faults, cache misses) and increasing performance significantly \autocite{locality}.
 
-Per contra, this approach will be heavily reliant on multiple work queues to distribute the tasks of different sequences between threads. As explained in the above section, the synchronization overhead of the queues may become a serious bottleneck on parallelism - even more so, due to the much heavier reliance on it.
+Per contra, this approach will be heavily reliant on multiple work queues to distribute the tasks of different sequences between threads. As explained in the above section, the synchronisation overhead of the queues may become a serious bottleneck on parallelism - even more so, due to the much heavier reliance on it.
 
 %TODO: mention stuff about pthreads, TBB, QtThread etc.
