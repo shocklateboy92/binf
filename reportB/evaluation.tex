@@ -3,17 +3,16 @@
 \section{Goals}
 Explain the dynamic goals that were defined, and how they were designed to be scaled back as complications arose, and time permitted. 
 
-Also should I explain that those goals were originally set with a group project in mind, and that's the primary reason they had to be scaled back so far?
 
 \section{Current State}
 Will describe the features that the new version supports already, will support in the future.
 
-Should I emphasise that this is a work in progress?
+\lipsum[1]
 
 % doesn't support N-states, but has extra D states to compensate.
 % aborts on gaps - has same penalty for detection
-
-\begin{wrapfigure}[24]{l}{0.4\textwidth}
+\section{Performance}
+\begin{wrapfigure}[26]{L}{0.4\textwidth}
 	\begin{tikzpicture}
 	\begin{axis}[
 	boxplot/draw direction=y,
@@ -34,7 +33,8 @@ Should I emphasise that this is a work in progress?
 	\label{fig:eval-boxplots}
 \end{wrapfigure}
 
-\section{Performance}
+%TODO: use revision history to get back to flowing version of figure once 5.1/2 are padded out some more.
+
 
 The new implementation of iHMMuneAlign was designed from scratch with performance in mind, dictating choice of language, frameworks/libraries, as well as various architectural decisions. 
 
@@ -54,7 +54,7 @@ was chosen meticulously, to ensure processing each sequence would only require f
 was the machine (hardware detailed above) running Arch Linux (Kernel 4.0.4). Furthermore, the benchmarks were run within runlevel 3 \autocite{runlevels}; a lower level environment used during machine initialisation. As such, there were no other non-essential tasks being performed on the system and should minimise interference.
 
 \paragraph{Measurement} \hfill \\
-of results was performed using the shell's inbuilt \code{time} utility. This uses the various operating system features to determine the following:
+of results was performed using the shell's inbuilt \code{time} utility. This invokes a given program and uses the various operating system features to determine the following:
 \begin{description}
 	\item[Real time] The total (Wall-clock) time from program invocation to termination.
 	\item[CPU time] Sum of the amount of time spent actually working on behalf of the program by each CPU
@@ -65,8 +65,15 @@ of results was performed using the shell's inbuilt \code{time} utility. This use
 A sufficiently hight sample size is required to show that the recorded data are statistically significant i.e. not by random chance. However, since a large number of tests are performed in these benchmarks, there is a trade-off between statistical precision and completing in a reasonable time.
 Ultimately, a value of 20 were most suitable -- each program was invoked 20 times per configuration.
 
-\subsubsection{Results}
-\lipsum[1]
+\subsubsection{Interpretation of Results}
+The total execution times for both implementations can be seen on \autoref{fig:eval-boxplots}. Since the previous implementation will only use 2 threads, it was run with 2 threads. 
+The new implementation however, will create and use as many threads as there are available CPU cores on the target machine (12 in this case).
+
+Also note that the graph is a box plot for all 3 measurements, rather than just the first two. However, in the case of the third measurement (new implementation without any artificial constraints) this is difficult to see, as the variance is so low relative to the difference in execution time between it and old implementation.
+
+It is readily apparent from the graph that the new implementation is approximately 5 times faster on this machine. While that factor will increase on more powerful machines, it should also be noted that the new implementation is more efficient than the previous.
+
+This can be seen by comparing the CPU times between executions, as presented in \autoref{fig:eval-user-time}. The mean CPU time for the new implementation (restricted to two threads) was 62.24 seconds, while the old one used 230.55 seconds. In simple terms, this means that the old implementation must to roughly 4 times the work to end up with the same results. This can be attributed to various factors including the overhead of Java, as well as the (non performance oriented) structure of the old program. 
 
 \subsection{Parallelism}
 As described in detail in \secref{sec:concurrency}, parallelism is essential for modern high performance applications. While total computational power in modern machines are increasing faster than ever, single threaded performance has stagnated. Clock speeds are no longer increasing significantly; all that extra power comes in new cores, which require increasing parallelism to leverage. 

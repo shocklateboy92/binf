@@ -12,7 +12,7 @@ for f in sys.argv[1:]:
     vals = []
     run = 0
     for line in open(f):
-        res = re.search('real\D+(\d+)m([\d.]+)s', line)
+        res = re.search('user\D+(\d+)m([\d.]+)s', line)
         if res:
             time = int(res.group(1)) * 60 + float(res.group(2))
             vals.append(time)
