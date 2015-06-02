@@ -17,10 +17,11 @@ Should I emphasise that this is a work in progress?
 	\begin{tikzpicture}
 	\begin{axis}[
 	boxplot/draw direction=y,
-	xtick={1,2},
-	xticklabels={Old, New},
+	xtick={1,2,3},
+	xticklabels={Old Impl., {1-Thread}, 12-Threads},
+	x tick label style={rotate=90},
 	width=0.4\textwidth,
-	height=\textheight,
+	height=0.9\textheight,
 	cycle list name=color list,
 	ylabel=Time Taken (in Seconds)
 	]
@@ -47,8 +48,22 @@ It is clear from the analysis performed in \secref{sec:threadprof}, that the pre
 
 \autoref{fig:i2-time} shows that there 
 
-%TODO: make line graph with num_threads in X axis
-%      this can be done by tbb::thread_scheduler_init(num_threads)
+\begin{figure}
+	\centering
+	\begin{tikzpicture}
+	\begin{axis}[
+	axis lines = left,
+	xlabel = Threads,
+	ylabel = Time (Seconds),
+	cycle list name=color list
+	]
+	
+	\input{eval-threads}
+	\end{axis}
+	\end{tikzpicture}
+	\caption{\ldots}
+	\label{fig:i2-time}
+\end{figure}
 
 The new implementation of iHMMuneAlign was designed from scratch with performance in mind, dictating choice of language, frameworks/libraries, as well as various architectural decisions. 
 
