@@ -5,10 +5,10 @@ import fileinput
 import re
 import statistics
 
-for f in ["i1-results.txt", "i2-results.txt"]:
+for f in ["i1-results.txt", "i2-results1.txt", "i2-results12.txt"]:
     vals = []
 
-    for line in open(f):
+    for line in open("results/" + f):
         res = re.search('real\D+(\d+)m([\d.]+)s', line)
         if res:
             time = int(res.group(1)) * 60 + float(res.group(2))
@@ -33,8 +33,8 @@ for f in ["i1-results.txt", "i2-results.txt"]:
         coordinates{{}};
     """.format(
             min(vals),
-            statistics.median(vals),
             statistics.median(begin),
+            statistics.median(vals),
             statistics.median(end),
             max(vals)
         )
