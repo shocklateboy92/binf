@@ -1,17 +1,29 @@
 \chapter{Evaluation}\label{ch:eval}
 
 \section{Goals}
-Explain the dynamic goals that were defined, and how they were designed to be scaled back as complications arose, and time permitted. 
+To reiterate, the primary goal of this project was to improve the performance of iHMMuneAlign; the HMM based gene alignment tool. The best method of achieving that was determined to be re-implementing from scratch, for reasons explained in \secref{sec:reimplementing}.
+
+The secondary goal was to improve the maintainability of iHMMuneAlign; to avoid necessitating such rewrites in future. These two were quite well achieved, as will be demonstrated in the following sections.
+
+However, due to time constraints, not all features of the old implementation could be recreated in the new one. This was a conscious decision -- we prioritised performance and maintainability over feature completeness, in order to demonstrate the possibilities.
 
 
 \section{Current State}
-Will describe the features that the new version supports already, will support in the future.
+As detailed in \secref{sec:blast-impl}, iHMMuneAlign no longer does the BLAST pre-alignment for the IGHV gene directly. For the moment, there is a BASH script which invokes \code{blastn} and then iHMMuneAlign with its output. For all the benchmarks in this section, invoking the new implementation of iHMMuneAlign will actually refer to launching this script.
 
-\lipsum[1]
+Currently, iHMMuneAlign does not support gene sequences with gaps in them. If it encounters one during alignment, it will abort that sequence. This is an important feature, and will be re-added at a later date. 
 
-% doesn't support N-states, but has extra D states to compensate.
-% aborts on gaps - has same penalty for detection
+It is important to take note however, that this will not effect the performance comparisons below: the inputs will not result in any gaps during alignment, and the performance penalty of checking if gaps exist is paid by both implementations.
+
+Presently, iHMMuneAlign does not model N and P addition. The previous implementation models N-addition; with evidence it also modelled P-addition at an earlier point in time.
+Modelling these require having extra states in the model, which will make a significant impact on total workload (and thus, performance). In order to allow for a fair comparison of performance, extra D and J states are added to the model. This is of course, a detriment to correctness and part of the concious effort to prioritise performance at the expense of correctness.
+
+Due to the limitations listed above, the output of iHMMuneAlign no longer matches exactly with the previous implementation. However, the overall improvement of iHMMuneAlign is an ongoing process and all important features will be added back in.
+
+\vfil
+\pagebreak
 \section{Performance}
+
 \begin{wrapfigure}[26]{L}{0.4\textwidth}
 	\begin{tikzpicture}
 	\begin{axis}[
@@ -32,9 +44,6 @@ Will describe the features that the new version supports already, will support i
 	\caption{Total (Wall-clock) time taken to process 300 sequences}
 	\label{fig:eval-boxplots}
 \end{wrapfigure}
-
-%TODO: use revision history to get back to flowing version of figure once 5.1/2 are padded out some more.
-
 
 The new implementation of iHMMuneAlign was designed from scratch with performance in mind, dictating choice of language, frameworks/libraries, as well as various architectural decisions. 
 
@@ -90,7 +99,7 @@ It is clear from the analysis performed in \secref{sec:threadprof}, that the pre
 		xlabel = Threads,
 		ylabel = Time (Seconds),
 		xmin = 0,
-		ymin = 0
+		ymin = 10
 	]
 	
 	\input{eval-threads}
