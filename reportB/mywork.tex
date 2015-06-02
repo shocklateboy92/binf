@@ -100,30 +100,37 @@ At the time of writing, the current implementation of iHMMuneAlign assumes the \
 % 		 use texlbl="\tex" instead of label="words"
 \begin{figure}
 	\label{fig:pipeline}
-	\caption{Overview of the Model Solving `Pipeline'}
+	\caption{Overview of the Alignment `Pipeline'}
 	\centering
-	\begin{dot2tex}
+	\begin{dot2tex}[autosize]
 		digraph G {
 
 			{
-				1[label="calculateAScore"];
-				2[label="buildModel"];
-				3[label="doViterbi"];
-				4[label="generateResult"];
+				node[shape=box];
+                1[texlbl="\ref{sec:pipeline-stage_1}\nameref{sec:pipeline-stage_1}"];
+                2[texlbl="\ref{sec:pipeline-stage_2}\nameref{sec:pipeline-stage_2}"];
+                3[texlbl="\ref{sec:pipeline-stage_3}\nameref{sec:pipeline-stage_3}"];
+                4[texlbl="\ref{sec:pipeline-stage_4}\nameref{sec:pipeline-stage_4}"];
+                5[texlbl="\ref{sec:pipeline-stage_5}\nameref{sec:pipeline-stage_5}"];
 			}
 
 			{
 				node[color=none];
-				"Input Sequence" -> 1;
-				"BLAST Hit" -> 1;
+				"BLAST Output" -> 1;
 
-				1 -> "A Score" -> 2;
+				1 -> "Match Sequence" -> 2;
+				1 -> "Input Details" -> 2;
 
-				2 -> "States" -> 3;
-				2 -> "Transitions" -> 3;
+				e1[label="Match Sequence"];
+                2 -> e1 -> 3;
+                2 -> "A-Score" -> 3;
 
-				3 -> "Most Likely Path" -> 4;
-				4 -> "Output";
+				3 -> "States" -> 4;
+				3 -> "Transitions" -> 4;
+                "Input Sequence" -> 4;
+
+				4 -> "Most Likely Path" -> 5;
+				5 -> "Output";
 			}
 
 		}
@@ -133,6 +140,7 @@ At the time of writing, the current implementation of iHMMuneAlign assumes the \
 The entire process of creating a HMM to represent \igh recombination and solving it using Viterbi's algorithm can be split up into several smaller problems. These can be viewed as stages in an assembly line where the result of each one feeds into the next, terminating with the final result. In computing, this is called a pipeline.
 
 \subsection{Parsing Blast Results}
+\label{sec:pipeline-stage_1}
 \lstset{basicstyle=\ttfamily\footnotesize,breaklines=true}
 \begin{figure}
 	\caption{An extract from a BLAST+ output file}
@@ -154,10 +162,16 @@ They are both large and extensive frameworks that are hard to distribute, much l
 
 Presently, a small and lightweight, header-only library called PugiXML\cite{pugixml} is used to parse the \code{blastn} output file. It very efficient, and sufficiently easy to use; but its continued use will be re-evaluated should iHMMuneAlign becomes dependent on Boost or Qt.
 
-\subsection{Calculating A-Score}
+\subsection{Calculating Age-Score}
+\label{sec:pipeline-stage_2}
+The older a gene is i.e. more rounds of mutation it has undergone, the more likely any individual nucleotide in it is to have mutated. To account for this, a `score' is calculated and used to scale the mutation probabilities. 
 
+This score is called an A-Score, and is extrapolated from the amount of mutations in the pre-aligned V gene, along with some other pre-determined factors \cite{iHMMuneAlign}.
+
+While this step doesn't involve much in terms of computational power, it is necessary to be performed in a separate step before generating the model; it is required for each state. 
 
 \subsection{Generating Model}
+\label{sec:pipeline-stage_3}
 % won't go deep - explained in detail in paper
 % represented as indexes, rather than objects
 % 	cheaper to create
@@ -165,6 +179,14 @@ Presently, a small and lightweight, header-only library called PugiXML\cite{pugi
 \subsubsection{Generating V/D/J States}
 \subsubsection{Generating Transitions}
 \subsection{Running Viterbi}
+\label{sec:pipeline-stage_4}
+
 \subsection{Printing Results}
+\label{sec:pipeline-stage_5}
+This process is fairly trivial, in comparison to the previous stages. Once the Viterbi algorithm is completed, it outputs a sequence of states representing the most likely path.
+
+The structures that represent states also contain a reference to some meta-data, containing various useful information; including the germline gene it originates from.
+
+Hence, all that remains by this stage is to perform some integrity checks / verifications on the resulting germline gene combination, and output it. At the moment, the current implementation merely prints out the names of the states: determining a pretty output format was considered a low priority.
 
 
